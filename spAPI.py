@@ -374,7 +374,7 @@ def on_mmorder_request_failed(mm_order, err_code, err_msg):
     pass
 
 _mmorder_request_failed_func = WINFUNCTYPE(None, POINTER(SPApiMMOrder), c_long, c_char_p)(on_mmorder_request_failed)
-_register_mmorder_request_failed = spdll.RegisterMMOrderRequestFailed
+_register_mmorder_request_failed = spdll.SPAPI_RegisterMMOrderRequestFailed
 _register_mmorder_request_failed.restype = None
 _register_mmorder_request_failed(_mmorder_request_failed_func)
 
@@ -447,8 +447,8 @@ def on_api_price_update(price):
     """
     pass
 
-_api_price_update_func = WINFUNCTYPE(None, POINTER(SPApiPrice))((on_api_price_update))
-_register_api_price_update = spdll.SPAPI_RegisterApiPriceUpdate()
+_api_price_update_func = WINFUNCTYPE(None, POINTER(SPApiPrice))(on_api_price_update)
+_register_api_price_update = spdll.SPAPI_RegisterApiPriceUpdate
 _register_api_price_update.restype = None
 _register_api_price_update(_api_price_update_func)
 
