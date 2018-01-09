@@ -16,39 +16,39 @@ class SPApiOrder(Structure):
                 ('UpPrice', c_double),  # 上限价格
                 ('DownLevel', c_double),  # 下限水平
                 ('DownPrice', c_double),  # 下限价格
-                ('ExtOrderNo', c_int),  # 外部指示
+                ('ExtOrderNo', c_longlong),  # 外部指示
                 ('IntOrderNo', c_int32),  # 用户订单编号
                 ('Qty', c_int32),  # 剩下数量
                 ('TradedQty', c_int32),  # 已成交数量
                 ('TotalQty', c_int32),  # 订单全部数量
                 ('ValidTime', c_uint32),  # 有效时间
-                ('SchedTime', c_int32),  # 预订发送时间
+                ('SchedTime', c_uint32),  # 预订发送时间
                 ('TimeStamp', c_uint32),  # 服务器接收订单时间
-                ('OrderOptions', c_long),  # 0=默认,1=T+1
-                ('AccNo', c_char),  # 用户帐号
-                ('ProdCode', c_char),  # 合约代号
-                ('Initiator', c_char),  # 下单用户
-                ('Ref', c_char),  # 参考
-                ('Ref2', c_char),  # 参考
-                ('GatewayCode', c_char),  # 网关
-                ('C1OrderID', c_char),  # 用户自定义参考
+                ('OrderOptions', c_ulong),  # 0=默认,1=T+1
+                ('AccNo', c_char * 16),  # 用户帐号
+                ('ProdCode', c_char * 16),  # 合约代号
+                ('Initiator', c_char * 16),  # 下单用户
+                ('Ref', c_char * 16),  # 参考
+                ('Ref2', c_char * 16),  # 参考
+                ('GatewayCode', c_char * 16),  # 网关
+                ('C1OrderID', c_char * 40),  # 用户自定义参考
                 ('BuySell', c_char),  # 买卖方向
                 ('StopType', c_char),  # 止损类型
                 ('OpenClose', c_char),  # 开平仓
-                ('CondType', c_int),  # 订单条件类型
-                ('OrderType', c_int),  # 订单类型
-                ('ValidType', c_int),  # 订单有效类型
-                ('Status', c_int),  # 状态
-                ('DecInPrice', c_int),  # 合约小数位
-                ('OrderAction', c_int),
+                ('CondType', c_char),  # 订单条件类型
+                ('OrderType', c_char),  # 订单类型
+                ('ValidType', c_char),  # 订单有效类型
+                ('Status', c_char),  # 状态
+                ('DecInPrice', c_char),  # 合约小数位
+                ('OrderAction', c_char),
                 ('updateTime', c_uint32),
                 ('updateSeqNo', c_int32)
                 ]
 
 
 class SPApiMMOrder(Structure):
-    _fields_ = [('BidExtOrderNo', c_int),  # Bid(买)单外部指示
-                ('AskExtOrderNo', c_int),  # Ask(沽)单外部指示
+    _fields_ = [('BidExtOrderNo', c_longlong),  # Bid(买)单外部指示
+                ('AskExtOrderNo', c_longlong),  # Ask(沽)单外部指示
                 ('BidAccOrderNo', c_long),  # Bid(买)单编号
                 ('AskAccOrderNo', c_long),  # Ask(沽)单编号
                 ('BidPrice', c_long),  # Bid(买)单价格
@@ -57,13 +57,13 @@ class SPApiMMOrder(Structure):
                 ('AskQty', c_long),  # Ask(沽)单数量
                 ('SpecTime', c_long),  # 预订发送时间
                 ('OrderOptions', c_ulong),  # 0=默认,1=T+1
-                ('ProdCode', c_char),  # 合约代号
-                ('AccNp', c_char),  # 用户帐号
-                ('C1OrderId', c_char),  # 用户自定义参考
-                ('OrigC1OrderId', c_char),  # 旧用户自定义参考
-                ('OrderType', c_int),  # 订单类型
-                ('ValidType', c_int),  # 订单有效类型
-                ('DecInPrice', c_int)  # 合约小数位
+                ('ProdCode', c_char * 16),  # 合约代号
+                ('AccNp', c_char * 16),  # 用户帐号
+                ('C1OrderId', c_char * 40),  # 用户自定义参考
+                ('OrigC1OrderId', c_char * 40),  # 旧用户自定义参考
+                ('OrderType', c_char),  # 订单类型
+                ('ValidType', c_char),  # 订单有效类型
+                ('DecInPrice', c_char)  # 合约小数位
                 ]
 
 
@@ -79,10 +79,10 @@ class SPApiPos(Structure):
                 ('PLBaseCcy', c_double),  # 盈亏(基本货币)
                 ('PL', c_double),  # 盈亏
                 ('ExchangeRate', c_double),  # 汇率
-                ('AccNo', c_char),  # 用户帐号
-                ('ProdCode', c_char),  # 合约代码
+                ('AccNo', c_char * 16),  # 用户帐号
+                ('ProdCode', c_char * 16),  # 合约代码
                 ('LongShort', c_char),  # 上日持仓长短方向
-                ('DecInPrice', c_int),  # 合约小数点
+                ('DecInPrice', c_char),  # 合约小数点
                 ]
 
 
@@ -90,25 +90,25 @@ class SPApiTrade(Structure):
     _fields_ = [('RecNO', c_double),  # 成交记录
                 ('Price', c_double),  # 成交价格
                 ('AvgPrice', c_double),  # 成交均价
-                ('TradeNo', c_int),  # 成交编号
-                ('ExtOrderNo', c_int),  # 外部指示
+                ('TradeNo', c_longlong),  # 成交编号
+                ('ExtOrderNo', c_longlong),  # 外部指示
                 ('IntOrderNo', c_int32),  # 用户订单编号
                 ('Qty', c_int32),  # 成交数量
                 ('TradeDate', c_uint32),  # 成交日期
                 ('TradeTime', c_uint32),  # 成交时间
-                ('AccNo', c_char),  # 用户帐号
-                ('ProdCode', c_char),  # 合约代码
-                ('Initiator', c_char),  # 下单用户
-                ('Ref', c_char),  # 参考
-                ('Ref2', c_char),  # 参考
-                ('GatewayCode', c_char),  # 网关
-                ('C1OrderId', c_char),  # 用户自定义参考
+                ('AccNo', c_char * 16),  # 用户帐号
+                ('ProdCode', c_char * 16),  # 合约代码
+                ('Initiator', c_char * 16),  # 下单用户
+                ('Ref', c_char * 16),  # 参考
+                ('Ref2', c_char * 16),  # 参考
+                ('GatewayCode', c_char * 16),  # 网关
+                ('C1OrderId', c_char * 40),  # 用户自定义参考
                 ('BuySell', c_char),  # 买卖方向
                 ('OpenClose', c_char),  # 开平仓
-                ('Status', c_int),  # 状态
-                ('DecInPrice', c_int),  # 小数位
+                ('Status', c_char),  # 状态
+                ('DecInPrice', c_char),  # 小数位
                 ('OrderPrice', c_double),
-                ('TradeRef', c_char),
+                ('TradeRef', c_char * 40),
                 ('TotalQty', c_int32),
                 ('RemainingQty', c_int32),
                 ('TradedQty', c_int32),
@@ -135,8 +135,8 @@ class SPApiPrice(Structure):
                 ('TurnoverVol', c_double),  # 总成交量
                 ('TurnoverAmt', c_double),  # 宗成交额
                 ('OpenInt', c_int32),  # 未平仓
-                ('ProdCode', c_char),  # 合约代码
-                ('ProdName', c_char),  # 合约名称
+                ('ProdCode', c_char * 16),  # 合约代码
+                ('ProdName', c_char * 40),  # 合约名称
                 ('DecInPrice', c_char),  # 合约小数位
                 ('ExstateNo', c_int32),  # 港期市场状态
                 ('TradeStateNo', c_int32),  # 市场状态
@@ -150,12 +150,12 @@ class SPApiPrice(Structure):
 class SPApiInstrument(Structure):
     _fields_ = [('Margin', c_double),
                 ('ContractSize', c_double),
-                ('MarketCode', c_char),  # 市场代码
-                ('InstCode', c_char),  # 产品系列代码
-                ('InstName', c_char),  # 英文名称
-                ('InstName1', c_char),  # 繁体名称
-                ('InstName2', c_char),  # 简体名称
-                ('Ccy', c_char),  # 产品系列的交易币种
+                ('MarketCode', c_char * 16),  # 市场代码
+                ('InstCode', c_char * 16),  # 产品系列代码
+                ('InstName', c_char * 40),  # 英文名称
+                ('InstName1', c_char * 40),  # 繁体名称
+                ('InstName2', c_char * 40),  # 简体名称
+                ('Ccy', c_char * 4),  # 产品系列的交易币种
                 ('DecInPrice', c_char),  # 产品系列的小数位
                 ('InstType', c_char),  # 产品系列的类型
                 ]
@@ -167,7 +167,7 @@ class SPApiAccBal(Structure):
                 ('NotYetValue', c_double),  # 未交手
                 ('Unpresented', c_double),  # 未兑现
                 ('TodayOut', c_double),  # 提取要求
-                ('Ccy', c_char),  # 货币
+                ('Ccy', c_char * 4),  # 货币
                 ]
 
 
@@ -176,7 +176,7 @@ class SPApiTicker(Structure):
                 ('Qty', c_int32),  # 成交量
                 ('TickerTime', c_uint32),  # 时间
                 ('DealSrc', c_int32),  # 来源
-                ('ProdCode', c_char),  # 合约代码
+                ('ProdCode', c_char * 16),  # 合约代码
                 ('DecInPrice', c_char)  # 小数位
                 ]
 
@@ -200,14 +200,31 @@ class SPApiAccInfo(Structure):
                 ('TotalFee', c_double),   # 费用总额
                 ('LoanToMR', c_double),  # 借贷/可按值%
                 ('LoanToMv', c_double),  # 借贷/市值%
-                ('AccName', c_char),  # 名称
-                ('BaseCcy', c_char),  # 基本币种
-                ('MarginClass', c_char),  # 保证金类别
-                ('TradeClass', c_char),  # 交易额别
-                ('ClientId', c_char),  # 客户
-                ('AEId', c_char),  # 经纪
+                ('AccName', c_char * 16),  # 名称
+                ('BaseCcy', c_char * 4),  # 基本币种
+                ('MarginClass', c_char * 16),  # 保证金类别
+                ('TradeClass', c_char * 16),  # 交易额别
+                ('ClientId', c_char * 16),  # 客户
+                ('AEId', c_char * 16),  # 经纪
                 ('AccType', c_char),  # 户口类别
                 ('CtrlLevel', c_char),  # 控制级数
                 ('Active', c_char),  # 生效
                 ('MarginPeriod', c_char)  # 时段
+                ]
+
+
+class SPApiProduct(Structure):
+    _fields_ = [('ProdCode', c_char * 16),
+                ('ProdType', c_char),
+                ('ProdName', c_char * 40),
+                ('Underlying', c_char * 16),
+                ('InstCode', c_char * 16),
+                ('ExpiryDate', c_uint32),
+                ('CallPut', c_char),
+                ('Strike', c_int32),
+                ('LotSize', c_int32),
+                ('ProdName1', c_char * 40),
+                ('ProdName2', c_char * 40),
+                ('OptStyle', c_char),
+                ('TickSize', c_int32),
                 ]
