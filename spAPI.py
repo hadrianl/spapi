@@ -12,10 +12,16 @@ spdll = cdll.LoadLibrary('spapidllm64.dll')
 
 config = {'host': 'demo.spsystem1.info',
           'port': 8080,
-          'license': '59493B8B4C09F',
+          'License': '59493B8B4C09F',
           'app_id': 'SPDEMO',
           'user_id': 'DEMO201706051A',
           'password': '1234'}
+config2 = {'host': 'sppro.eif.com.hk',
+           'port': 8080,
+           'License': '7E9089A09316DFD7',
+           'app_id': 'ESS',
+           'user_id': '302266',
+           'password': 'krtz2018'}
 
 
 def initialize():
@@ -307,15 +313,7 @@ def on_login_reply(user_id, ret_code, ret_msg):
     :param ret_msg:登录信息.如果登录成功返回的是一个空字符串.如果登录失败会返回相应的错误提示
     :return:
     """
-    print(f'user_id:{user_id}')
-    print(f'ret_code:{ret_code}')
-    print(f'ret_msg:{ret_msg}')
-
-login_reply_func = WINFUNCTYPE(None, c_char_p, c_long, c_char_p)(on_login_reply)                  # 工厂函数生成回调函数，参数由回调函数返回类型和参数构成,并对接python回调函数,构造一个ctype的回调函数
-register_login_reply = spdll.SPAPI_RegisterLoginReply           # 注册函数
-register_login_reply.restype = None                             # 注册函数的返回类型
-register_login_reply(login_reply_func)                        # 把回调函数注册
-
+    pass
 
 def on_pswchange_reply(ret_code, ret_msg):
     """
@@ -325,11 +323,6 @@ def on_pswchange_reply(ret_code, ret_msg):
     :return:
     """
     pass
-
-_pswchange_reply_func = WINFUNCTYPE(None, c_long, c_char_p)(on_pswchange_reply)
-_register_pswchange_reply = spdll. SPAPI_RegisterPswChangeReply
-_register_pswchange_reply.restype = None
-_register_pswchange_reply(_pswchange_reply_func)
 
 
 def on_order_request_failed(action, order, err_code, err_msg):
@@ -343,11 +336,6 @@ def on_order_request_failed(action, order, err_code, err_msg):
     """
     pass
 
-_order_request_failed_func = WINFUNCTYPE(None, c_int, POINTER(SPApiOrder), c_long, c_char_p)(on_order_request_failed)
-_register_order_request_failed = spdll.SPAPI_RegisterOrderRequestFailed
-_register_order_request_failed.restype = None
-_register_order_request_failed(_order_request_failed_func)
-
 
 def on_order_before_send_report(order):
     """
@@ -356,11 +344,6 @@ def on_order_before_send_report(order):
     :return:
     """
     pass
-
-_order_before_send_report_func = WINFUNCTYPE(None, POINTER(SPApiOrder))(on_order_before_send_report)
-_register_order_before_send_report = spdll.SPAPI_RegisterOrderBeforeSendReport
-_register_order_before_send_report.restype = None
-_register_order_before_send_report(_order_before_send_report_func)
 
 
 def on_mmorder_request_failed(mm_order, err_code, err_msg):
@@ -373,11 +356,6 @@ def on_mmorder_request_failed(mm_order, err_code, err_msg):
     """
     pass
 
-_mmorder_request_failed_func = WINFUNCTYPE(None, POINTER(SPApiMMOrder), c_long, c_char_p)(on_mmorder_request_failed)
-_register_mmorder_request_failed = spdll.SPAPI_RegisterMMOrderRequestFailed
-_register_mmorder_request_failed.restype = None
-_register_mmorder_request_failed(_mmorder_request_failed_func)
-
 
 def on_mmorder_before_send_report(mm_order):
     """
@@ -386,11 +364,6 @@ def on_mmorder_before_send_report(mm_order):
     :return:
     """
     pass
-
-_mmorder_before_send_report_func = WINFUNCTYPE(None, POINTER(SPApiMMOrder))(on_mmorder_before_send_report)
-_register_mmorder_before_send_report = spdll.SPAPI_RegisterMMOrderBeforeSendReport
-_register_mmorder_before_send_report.restype = None
-_register_mmorder_before_send_report(_mmorder_before_send_report_func)
 
 
 def on_quote_request_received_report(product_code, buy_sell, qty):
@@ -403,11 +376,6 @@ def on_quote_request_received_report(product_code, buy_sell, qty):
     """
     pass
 
-_quote_request_received_report_func = WINFUNCTYPE(None, c_char_p, c_char_p, c_long)(on_quote_request_received_report)
-_register_quote_received_report = spdll.SPAPI_RegisterQuoteRequestReceivedReport
-_register_quote_received_report.restype = None
-_register_quote_received_report(_quote_request_received_report_func)
-
 
 def on_trade_report(rec_no, trade):
     """
@@ -417,11 +385,6 @@ def on_trade_report(rec_no, trade):
     :return:
     """
     pass
-
-_trade_reporot_func = WINFUNCTYPE(None, c_long, POINTER(SPApiTrade))(on_trade_report)
-_register_trade_report = spdll.SPAPI_RegisterTradeReport
-_register_trade_report.restype = None
-_register_trade_report(_trade_reporot_func)
 
 
 def on_load_trade_ready_push(rec_no, trade):
@@ -433,11 +396,6 @@ def on_load_trade_ready_push(rec_no, trade):
     """
     pass
 
-_load_trade_ready_push_func = WINFUNCTYPE(None, c_long, POINTER(SPApiTrade))(on_load_trade_ready_push)
-_register_load_trade_ready_push = spdll.SPAPI_RegisterLoadTradeReadyPush
-_register_load_trade_ready_push.restype = None
-_register_load_trade_ready_push(_load_trade_ready_push_func)
-
 
 def on_api_price_update(price):
     """
@@ -446,11 +404,6 @@ def on_api_price_update(price):
     :return:
     """
     pass
-
-_api_price_update_func = WINFUNCTYPE(None, POINTER(SPApiPrice))(on_api_price_update)
-_register_api_price_update = spdll.SPAPI_RegisterApiPriceUpdate
-_register_api_price_update.restype = None
-_register_api_price_update(_api_price_update_func)
 
 
 def on_ticker_update(ticker):
@@ -461,11 +414,6 @@ def on_ticker_update(ticker):
     """
     pass
 
-_ticker_update_func = WINFUNCTYPE(None, POINTER(SPApiTicker))(on_ticker_update)
-_register_ticker_update = spdll.SPAPI_RegisterTickerUpdate
-_register_ticker_update.restype = None
-_register_ticker_update(_ticker_update_func)
-
 
 def on_order_report(rec_no, order):
     """
@@ -475,11 +423,6 @@ def on_order_report(rec_no, order):
     :return:
     """
     pass
-
-_order_report_func = WINFUNCTYPE(None, c_long, POINTER(SPApiOrder))(on_order_report)
-_register_order_report = spdll.SPAPI_RegisterOrderReport
-_register_order_report.restype = None
-_register_order_report(_order_report_func)
 
 
 def on_instrument_list_reply(req_id, is_ready, ret_msg):
@@ -492,11 +435,6 @@ def on_instrument_list_reply(req_id, is_ready, ret_msg):
     """
     pass
 
-_instrument_list_reply_func = WINFUNCTYPE(None, c_long, c_bool, c_char_p)(on_instrument_list_reply)
-_register_instrument_list_reply = spdll.SPAPI_RegisterInstrumentListReply
-_register_instrument_list_reply.restype = None
-_register_instrument_list_reply(_instrument_list_reply_func)
-
 
 def on_business_date_reply(business_date):
     """
@@ -505,11 +443,6 @@ def on_business_date_reply(business_date):
     :return:
     """
     pass
-
-_business_date_reply_func = WINFUNCTYPE(None, c_long)(on_business_date_reply)
-_register_business_date_reply = spdll.SPAPI_RegisterBusinessDateReply
-_register_business_date_reply.restype = None
-_register_business_date_reply(_business_date_reply_func)
 
 
 def on_connecting_reply(host_type, con_status):
@@ -524,11 +457,6 @@ def on_connecting_reply(host_type, con_status):
     """
     pass
 
-_connecting_reply_func = WINFUNCTYPE(None, c_long, c_long)(on_connecting_reply)
-_register_connecting_reply = spdll.SPAPI_RegisterConnectingReply
-_register_connecting_reply.restype = None
-_register_connecting_reply(_connecting_reply_func)
-
 
 def on_account_login_reply(accNo, ret_code, ret_msg):
     """
@@ -539,11 +467,6 @@ def on_account_login_reply(accNo, ret_code, ret_msg):
     :return:
     """
     pass
-
-_account_login_reply_func = WINFUNCTYPE(None, c_char_p, c_long, c_char_p)(on_account_login_reply)
-_register_account_login_reply = spdll. SPAPI_RegisterAccountLoginReply
-_register_account_login_reply.restype = None
-_register_account_login_reply(_account_login_reply_func)
 
 
 def on_account_logout_reply(accNo, ret_code, ret_msg):
@@ -556,11 +479,6 @@ def on_account_logout_reply(accNo, ret_code, ret_msg):
     """
     pass
 
-_account_logout_reply_func = WINFUNCTYPE(None, c_char_p, c_long, c_char_p)(on_account_logout_reply)
-_register_account_logout_reply = spdll.SPAPI_RegisterAccountLogoutReply
-_register_account_logout_reply.restype = None
-_register_account_logout_reply(_account_logout_reply_func)
-
 
 def on_account_info_push(acc_info):
     """
@@ -569,11 +487,6 @@ def on_account_info_push(acc_info):
     :return:
     """
     pass
-
-_account_info_push_func = WINFUNCTYPE(None, POINTER(SPApiAccInfo))(on_account_info_push)
-_register_account_info_push = spdll.SPAPI_RegisterAccountInfoPush
-_register_account_info_push.restype = None
-_register_account_info_push(_account_info_push_func)
 
 
 def on_account_position_push(pos):
@@ -584,11 +497,6 @@ def on_account_position_push(pos):
     """
     pass
 
-_account_position_push_func = WINFUNCTYPE(None, POINTER(SPApiPos))(on_account_position_push)
-_register_account_position_push = spdll.SPAPI_RegisterAccountPositionPush
-_register_account_position_push.restype = None
-_register_account_position_push(_account_position_push_func)
-
 
 def on_updated_account_position_push(pos):
     """
@@ -598,11 +506,6 @@ def on_updated_account_position_push(pos):
     """
     pass
 
-_updated_account_position_push_func = WINFUNCTYPE(None, POINTER(SPApiPos))(on_updated_account_position_push)
-_register_updated_account_position_push = spdll.SPAPI_RegisterUpdatedAccountPositionPush
-_register_updated_account_position_push.restype = None
-_register_updated_account_position_push(_updated_account_position_push_func)
-
 
 def on_updated_account_balance_push(acc_bal):
     """
@@ -611,11 +514,6 @@ def on_updated_account_balance_push(acc_bal):
     :return:
     """
     pass
-
-_updated_account_balance_push_func = WINFUNCTYPE(None, POINTER(SPApiAccBal))(on_updated_account_balance_push)
-_register_updated_account_balance_push = spdll.SPAPI_RegisterUpdatedAccountBalancePush
-_register_updated_account_balance_push.restype = None
-_register_updated_account_balance_push(_updated_account_balance_push_func)
 
 
 def on_product_list_by_code_reply(req_id, inst_code, is_ready, ret_msg):
@@ -629,12 +527,6 @@ def on_product_list_by_code_reply(req_id, inst_code, is_ready, ret_msg):
     """
     pass
 
-_product_list_by_code_reply_func = WINFUNCTYPE(None, c_long, c_char_p, c_bool, c_char_p)(on_product_list_by_code_reply)
-_register_product_list_by_code_reply = spdll.SPAPI_RegisterProductListByCodeReply
-_register_product_list_by_code_reply.restype = None
-_register_product_list_by_code_reply(_product_list_by_code_reply_func)
-
-
 def on_account_control_reply(ret_code, ret_msg):
     """
     户口控制回调
@@ -644,7 +536,217 @@ def on_account_control_reply(ret_code, ret_msg):
     """
     pass
 
-_account_control_reply_func = WINFUNCTYPE(None, c_long, c_char_p)(on_account_control_reply)
-_register_account_control_reply = spdll.SPAPI_RegisterAccountControlReply
-_register_account_control_reply.restype = None
-_register_account_control_reply(_account_control_reply_func)
+class register_base:
+    def __init__(self, func, register_func, *args):
+        self._func = func
+        self._ctype_func = WINFUNCTYPE(None, *args)(self._func)
+        self._register_func = register_func
+        self._register_func.restype = None
+        self._register_func(self._ctype_func)
+
+
+callback_register_cfun_ctype = {'on_login_reply':
+                                    [spdll.SPAPI_RegisterLoginReply, c_char_p, c_long, c_char_p],
+                                'on_pswchange_reply':
+                                    [spdll.SPAPI_RegisterPswChangeReply, c_long, c_char_p],
+                                'on_order_request_failed':
+                                    [spdll.SPAPI_RegisterOrderRequestFailed, c_int, POINTER(SPApiOrder)],
+                                'on_order_before_send_report':
+                                    [spdll.SPAPI_RegisterOrderBeforeSendReport, POINTER(SPApiOrder)],
+                                'on_mmorder_request_failed':
+                                    [spdll.SPAPI_RegisterMMOrderRequestFailed, POINTER(SPApiMMOrder), c_long, c_char_p],
+                                'on_mmorder_before_send_report':
+                                    [spdll.SPAPI_RegisterMMOrderBeforeSendReport, POINTER(SPApiMMOrder)],
+                                'on_quote_request_received_report':
+                                    [spdll.SPAPI_RegisterQuoteRequestReceivedReport, c_char_p, c_char_p, c_long],
+                                'on_trade_report':
+                                    [spdll.SPAPI_RegisterTradeReport, c_long, POINTER(SPApiTrade)],
+                                'on_load_trade_ready_push':
+                                    [spdll.SPAPI_RegisterLoadTradeReadyPush, c_long, POINTER(SPApiTrade)],
+                                'on_api_price_update':
+                                    [spdll.SPAPI_RegisterApiPriceUpdate, POINTER(SPApiPrice)],
+                                'on_ticker_update':
+                                    [spdll.SPAPI_RegisterTickerUpdate, POINTER(SPApiTicker)],
+                                'on_order_report':
+                                    [spdll.SPAPI_RegisterOrderReport, c_long, POINTER(SPApiOrder)],
+                                'on_instrument_list_reply':
+                                    [spdll.SPAPI_RegisterInstrumentListReply, c_long, c_bool, c_char_p],
+                                'on_business_date_reply':
+                                    [spdll.SPAPI_RegisterBusinessDateReply, c_long],
+                                'on_connecting_reply':
+                                    [spdll.SPAPI_RegisterConnectingReply, c_long, c_long],
+                                'on_account_login_reply':
+                                    [spdll.SPAPI_RegisterAccountLoginReply, c_char_p, c_long, c_char_p],
+                                'on_account_logout_reply':
+                                    [spdll.SPAPI_RegisterAccountLogoutReply, c_char_p, c_long, c_char_p],
+                                'on_account_info_push':
+                                    [spdll.SPAPI_RegisterAccountInfoPush, POINTER(SPApiAccInfo)],
+                                'on_account_position_push':
+                                    [spdll.SPAPI_RegisterAccountPositionPush, POINTER(SPApiPos)],
+                                'on_updated_account_position_push':
+                                    [spdll.SPAPI_RegisterAccountInfoPush, POINTER(SPApiAccInfo)],
+                                'on_updated_account_balance_push':
+                                    [spdll.SPAPI_RegisterUpdatedAccountBalancePush, POINTER(SPApiAccBal)],
+                                'on_product_list_by_code_reply':
+                                    [spdll.SPAPI_RegisterProductListByCodeReply, c_long, c_char_p, c_bool, c_char_p],
+                                'on_account_control_reply':
+                                    [spdll.SPAPI_RegisterAccountControlReply, c_long, c_char_p],
+                                }
+import sys
+for k, v in callback_register_cfun_ctype.items():
+    def register_init(self, func):
+        register_base.__init__(self, func, v[0], *v[1:])
+    _doc = getattr(getattr(sys.modules[__name__], k), '__doc__')
+    setattr(sys.modules[__name__],
+            k,
+            type(k,
+                 (register_base, ),
+                 dict(__init__=register_init,
+                      __doc__=_doc)
+                 )
+            )
+# _login_reply_func = WINFUNCTYPE(None, c_char_p, c_long, c_char_p)(on_login_reply)                  # 工厂函数生成回调函数，参数由回调函数返回类型和参数构成,并对接python回调函数,构造一个ctype的回调函数
+# _register_login_reply = spdll.SPAPI_RegisterLoginReply           # 注册函数
+# _register_login_reply.restype = None                             # 注册函数的返回类型
+# _register_login_reply(_login_reply_func)                        # 把回调函数注册
+
+# _pswchange_reply_func = WINFUNCTYPE(None, c_long, c_char_p)(on_pswchange_reply)
+# _register_pswchange_reply = spdll.SPAPI_RegisterPswChangeReply
+# _register_pswchange_reply.restype = None
+# _register_pswchange_reply(_pswchange_reply_func)
+
+# _order_request_failed_func = WINFUNCTYPE(None, c_int, POINTER(SPApiOrder), c_long, c_char_p)(on_order_request_failed)
+# _register_order_request_failed = spdll.SPAPI_RegisterOrderRequestFailed
+# _register_order_request_failed.restype = None
+# _register_order_request_failed(_order_request_failed_func)
+
+# _order_before_send_report_func = WINFUNCTYPE(None, POINTER(SPApiOrder))(on_order_before_send_report)
+# _register_order_before_send_report = spdll.SPAPI_RegisterOrderBeforeSendReport
+# _register_order_before_send_report.restype = None
+# _register_order_before_send_report(_order_before_send_report_func)
+
+# _mmorder_request_failed_func = WINFUNCTYPE(None, POINTER(SPApiMMOrder), c_long, c_char_p)(on_mmorder_request_failed)
+# _register_mmorder_request_failed = spdll.SPAPI_RegisterMMOrderRequestFailed
+# _register_mmorder_request_failed.restype = None
+# _register_mmorder_request_failed(_mmorder_request_failed_func)
+
+# _mmorder_before_send_report_func = WINFUNCTYPE(None, POINTER(SPApiMMOrder))(on_mmorder_before_send_report)
+# _register_mmorder_before_send_report = spdll.SPAPI_RegisterMMOrderBeforeSendReport
+# _register_mmorder_before_send_report.restype = None
+# _register_mmorder_before_send_report(_mmorder_before_send_report_func)
+
+# _quote_request_received_report_func = WINFUNCTYPE(None, c_char_p, c_char_p, c_long)(on_quote_request_received_report)
+# _register_quote_received_report = spdll.SPAPI_RegisterQuoteRequestReceivedReport
+# _register_quote_received_report.restype = None
+# _register_quote_received_report(_quote_request_received_report_func)
+
+# _trade_reporot_func = WINFUNCTYPE(None, c_long, POINTER(SPApiTrade))(on_trade_report)
+# _register_trade_report = spdll.SPAPI_RegisterTradeReport
+# _register_trade_report.restype = None
+# _register_trade_report(_trade_reporot_func)
+
+# _load_trade_ready_push_func = WINFUNCTYPE(None, c_long, POINTER(SPApiTrade))(on_load_trade_ready_push)
+# _register_load_trade_ready_push = spdll.SPAPI_RegisterLoadTradeReadyPush
+# _register_load_trade_ready_push.restype = None
+# _register_load_trade_ready_push(_load_trade_ready_push_func)
+
+# _api_price_update_func = WINFUNCTYPE(None, POINTER(SPApiPrice))(on_api_price_update)
+# _register_api_price_update = spdll.SPAPI_RegisterApiPriceUpdate
+# _register_api_price_update.restype = None
+# _register_api_price_update(_api_price_update_func)
+
+# _ticker_update_func = WINFUNCTYPE(None, POINTER(SPApiTicker))(on_ticker_update)
+# _register_ticker_update = spdll.SPAPI_RegisterTickerUpdate
+# _register_ticker_update.restype = None
+# _register_ticker_update(_ticker_update_func)
+
+# _order_report_func = WINFUNCTYPE(None, c_long, POINTER(SPApiOrder))(on_order_report)
+# _register_order_report = spdll.SPAPI_RegisterOrderReport
+# _register_order_report.restype = None
+# _register_order_report(_order_report_func)
+
+# _instrument_list_reply_func = WINFUNCTYPE(None, c_long, c_bool, c_char_p)(on_instrument_list_reply)
+# _register_instrument_list_reply = spdll.SPAPI_RegisterInstrumentListReply
+# _register_instrument_list_reply.restype = None
+# _register_instrument_list_reply(_instrument_list_reply_func)
+
+# _business_date_reply_func = WINFUNCTYPE(None, c_long)(on_business_date_reply)
+# _register_business_date_reply = spdll.SPAPI_RegisterBusinessDateReply
+# _register_business_date_reply.restype = None
+# _register_business_date_reply(_business_date_reply_func)
+
+# _connecting_reply_func = WINFUNCTYPE(None, c_long, c_long)(on_connecting_reply)
+# _register_connecting_reply = spdll.SPAPI_RegisterConnectingReply
+# _register_connecting_reply.restype = None
+# _register_connecting_reply(_connecting_reply_func)
+
+# _account_login_reply_func = WINFUNCTYPE(None, c_char_p, c_long, c_char_p)(on_account_login_reply)
+# _register_account_login_reply = spdll.SPAPI_RegisterAccountLoginReply
+# _register_account_login_reply.restype = None
+# _register_account_login_reply(_account_login_reply_func)
+
+# _account_logout_reply_func = WINFUNCTYPE(None, c_char_p, c_long, c_char_p)(on_account_logout_reply)
+# _register_account_logout_reply = spdll.SPAPI_RegisterAccountLogoutReply
+# _register_account_logout_reply.restype = None
+# _register_account_logout_reply(_account_logout_reply_func)
+
+# _account_info_push_func = WINFUNCTYPE(None, POINTER(SPApiAccInfo))(on_account_info_push)
+# _register_account_info_push = spdll.SPAPI_RegisterAccountInfoPush
+# _register_account_info_push.restype = None
+# _register_account_info_push(_account_info_push_func)
+
+# _account_position_push_func = WINFUNCTYPE(None, POINTER(SPApiPos))(on_account_position_push)
+# _register_account_position_push = spdll.SPAPI_RegisterAccountPositionPush
+# _register_account_position_push.restype = None
+# _register_account_position_push(_account_position_push_func)
+
+# _updated_account_position_push_func = WINFUNCTYPE(None, POINTER(SPApiPos))(on_updated_account_position_push)
+# _register_updated_account_position_push = spdll.SPAPI_RegisterUpdatedAccountPositionPush
+# _register_updated_account_position_push.restype = None
+# _register_updated_account_position_push(_updated_account_position_push_func)
+
+# _updated_account_balance_push_func = WINFUNCTYPE(None, POINTER(SPApiAccBal))(on_updated_account_balance_push)
+# _register_updated_account_balance_push = spdll.SPAPI_RegisterUpdatedAccountBalancePush
+# _register_updated_account_balance_push.restype = None
+# _register_updated_account_balance_push(_updated_account_balance_push_func)
+#
+# _product_list_by_code_reply_func = WINFUNCTYPE(None, c_long, c_char_p, c_bool, c_char_p)(on_product_list_by_code_reply)
+# _register_product_list_by_code_reply = spdll.SPAPI_RegisterProductListByCodeReply
+# _register_product_list_by_code_reply.restype = None
+# _register_product_list_by_code_reply(_product_list_by_code_reply_func)
+#
+# _account_control_reply_func = WINFUNCTYPE(None, c_long, c_char_p)(on_account_control_reply)
+# _register_account_control_reply = spdll.SPAPI_RegisterAccountControlReply
+# _register_account_control_reply.restype = None
+# _register_account_control_reply(_account_control_reply_func)
+
+
+# from functools import wraps
+# def on_login_reply(func):
+#     """
+#     登陆回调方法
+#     :param user_id:用户登入户口
+#     :param ret_code:长整型编号.0:表示登录成功.如果登录失败也会有相应的错误编号
+#     :param ret_msg:登录信息.如果登录成功返回的是一个空字符串.如果登录失败会返回相应的错误提示
+#     :return:
+#     """
+#     @wraps(func)
+#     def reply(*args, **kwargs):
+#         return func(*args, **kwargs)
+#     global _login_reply_func
+#     global _register_login_reply
+#     _login_reply_func = WINFUNCTYPE(None, c_char_p, c_long, c_char_p)(func)  # 工厂函数生成回调函数，参数由回调函数返回类型和参数构成,并对接python回调函数,构造一个ctype的回调函数
+#     _register_login_reply = spdll.SPAPI_RegisterLoginReply  # 注册函数
+#     _register_login_reply.restype = None  # 注册函数的返回类型
+#     _register_login_reply(_login_reply_func)  #
+#     return reply
+
+#
+# class on_login_reply:
+#     def __init__(self, func):
+#         self._func = func
+#         self._login_reply_func = WINFUNCTYPE(None, c_char_p, c_long, c_char_p)(self._func)
+#         self._register_login_reply = spdll.SPAPI_RegisterLoginReply
+#         self._register_login_reply.restype = None
+#     def __call__(self, func):
+#         self._register_login_reply(self._login_reply_func)
