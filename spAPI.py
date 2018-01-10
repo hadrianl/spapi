@@ -29,9 +29,15 @@ def initialize():
     API初始化
     :return: 0代表成功
     """
-    return spdll.SPAPI_Initialize()
+    ret = spdll.SPAPI_Initialize()
+    if ret == 0:
+        print('初始化成功')
+    else:
+        raise Exception('初始化失败')
 
-
+ret_code_msg_uninit = {0: '代表成功',
+                       -1:  '用户未登出',
+                       -2: '释放异常'}
 def unintialize():
     """
     释放API
@@ -39,7 +45,11 @@ def unintialize():
             -1, 用户未登出
             -2，释放异常
     """
-    return spdll.SPAPI_Uninitialize()
+    ret = spdll.SPAPI_Uninitialize()
+    if ret == 0:
+        print('释放API成功')
+    else:
+        raise Exception(f'释放API失败,errcode：{ret_code_msg_uninit[ret]}')
 
 
 def set_language(langid: int):
@@ -49,7 +59,11 @@ def set_language(langid: int):
     :param langid:0:英  1:繁  2:简
     :return:0:表示请求成功
     """
-    return spdll.SPAPI_SetLanguageId(c_int(langid))
+    ret = spdll.SPAPI_SetLanguageId(c_int(langid))
+    if ret == 0:
+        print('设置语言成功')
+    else:
+        raise Exception('设置语言失败')
 
 
 c_char_p_host = c_char_p()
@@ -88,19 +102,23 @@ def login():
     发出登录请求
     :return: 0, 代表成功发送登录请求.
     """
-    return spdll.SPAPI_Login()
-
+    ret = spdll.SPAPI_Login()
+    if ret == 0:
+        print(f'{c_char_p_user_id.value}登录请求发送成功')
+    else:
+        raise Exception(f'{c_char_p_user_id.value}登录请求发送失败')
 
 def logout():
     """
     发送登出请求.
     :return:0, 代表成功发送登出请求.
     """
-    if not c_char_p_user_id.value:
-        raise Exception('未登录')
-    else:
-        return spdll.SPAPI_Logout(c_char_p_user_id)
 
+    ret = spdll.SPAPI_Logout(c_char_p_user_id)
+    if ret == 0:
+        print(f'{c_char_p_user_id.value}登出请求发送成功')
+    else:
+        raise Exception(f'{c_char_p_user_id.value}登出请求发送失败')
 
 def change_password(old_psw, new_psw):
     """
@@ -109,12 +127,19 @@ def change_password(old_psw, new_psw):
     :param new_psw:新密码
     :return:0, 代表成功发送登出请求.
     """
-    if not c_char_p_user_id.value:
-        raise Exception('未登录')
+    ret = spdll.SPAPI_Logout(c_char_p_user_id, c_char_p(old_psw), c_char_p(new_psw))
+    if ret == 0:
+        print(f'{c_char_p_user_id.value}修改密码请求发送成功')
     else:
-        return spdll.SPAPI_Logout(c_char_p_user_id, c_char_p(old_psw), c_char_p(new_psw))
+        raise Exception(f'{c_char_p_user_id.value}修改密码请求发送失败')
 
 
+ret_code_msg_login_status = {1: '没有登入',
+                             2: '连接中',
+                             3: '已连接',
+                             4: '连接失败',
+                             5: '已登出',
+                             6:'API阻塞'}
 def get_login_status(host_id):
     """
     查询交易连接状态与行情连接状态.
@@ -123,71 +148,164 @@ def get_login_status(host_id):
                    88, 表示一般资讯连接.
     :return:1：没有登入，2：连接中，3：已连接，4：连接失败，5：已登出 6：API阻塞
     """
-    if not c_char_p_user_id.value:
-        raise Exception('未登录')
+
+    ret = spdll.SPAPI_GetLoginStatus(c_char_p_user_id, c_short(host_id))
+    if ret in ret_code_msg_login_status:
+        print(ret_code_msg_login_status[ret])
+        return ret
     else:
-        return spdll.SPAPI_GetLoginStatus(c_char_p_user_id, c_short(host_id))
+        raise Exception(f'获取状态错误！errcode:{ret}')
 
 
-# order = POINTER(SPApiOrder)
-def add_order():
-    pass
+ret_code_msg_order = {0, '表示成功',
+                      -1, '用户未登入',
+                      -2,'无记录',
+                      -3,'价格输入有误',
+                      -4, '止损/限价,触发价格不正确',
+                      -5,'增强止损,止损价格不正确',
+                      -6,'增强止损,追踪市场价格不正确',
+                      -7,'双向限价,止损价格不正确',
+                      -8,'开仓/平仓,触发价格不正确',
+                      -9,'开仓/平仓,止赚价格不正确',
+                      -10,'开仓/平仓,止损价格不正确'}
+
+def add_order(*args):
+    order = SPApiOrder(*args)
+    ret = spdll.SPAPI_AddOrder(pointer(order))
+    if ret == 0:
+        print('添加订单成功')
+    else:
+        raise Exception(f'添加订单失败，失败原因：{ret_code_msg_order[ret]}')
 
 
-def add_inactive_order():
-    pass
+
+def add_inactive_order(*args):
+    order = SPApiOrder(*args)
+    ret = spdll.SPAPI_AddOrder(pointer(order))
+    if ret == 0:
+        print('添加无效订单成功')
+    else:
+        raise Exception(f'添加无效订单失败，失败原因：{ret_code_msg_order[ret]}')
+
+ret_code_msg_change_order={0: '成功',
+                            -1: '用户未登入',
+                            -2: '无记录',
+                            -3: '价格输入有误'}
+def change_order(order, org_price, org_qty):
+    ret = spdll.SPAPI_ChangeOrder(c_char_p_user_id, pointer(order), c_double(org_price), c_double(org_qty))
+    if ret == 0:
+        print('修改工作中的订单成功')
+    else:
+        raise Exception(f'修改工作中的订单失败，失败原因：{ret_code_msg_change_order[ret]}')
 
 
-def change_order():
-    pass
+def change_order_by(accOrderNo, org_price, org_qty, newPrice, newQty):
+    ret = spdll.SPAPI_ChangeOrderBy(c_char_p_user_id,
+                                    c_char_p_user_id,
+                                    c_long(accOrderNo),
+                                    c_double(org_price),
+                                    c_long(org_qty),
+                                    c_double(newPrice),
+                                    c_long(newQty))
+    if ret == 0:
+        print(f'修改工作中的订单：#{accOrderNo}成功')
+    else:
+        raise Exception(f'修改工作中的订单：#{accOrderNo}失败，失败原因：{ret_code_msg_change_order[ret]}')
 
 
-def change_order_by():
-    pass
-
-
-def get_order_by_orderNo():
-    pass
-
+def get_order_by_orderNo(order_no):
+    order = SPApiOrder()
+    ret = spdll.SPAPI_GetOrderByOrderNo(c_char_p_user_id, c_char_p_user_id, c_long(order_no), pointer(order))
+    if ret == 0:
+        return order
+    else:
+        raise Exception('获取订单失败！')
 
 def get_order_count():
-    pass
+    ret = spdll.SPAPI_GetOrderCount(c_char_p_user_id, c_char_p_user_id)
+    return ret
 
 
 def get_active_order():
-    pass
+    orders = POINTER(SPApiOrder)  # TODO vector
+    ret = spdll.SPAPI_GetActiveOrder(c_char_p_user_id, c_char_p_user_id, orders)
+    if ret == 0:
+        return  orders
+    else:
+        raise Exception('获取订单失败！')
 
 
 def get_orders_by_array():
-    pass
+    orders_list = POINTER(SPApiOrder)
+    ret =spdll.SPAPI_GetOrdersByArray(c_char_p_user_id, c_char_p_user_id, orders_list)
+    if ret == 0:
+        return orders_list
+    else:
+        raise Exception('获取订单失败！')
 
+def delete_order_by(accOrderNo, productCode, clOrderId):
+    ret = spdll.SPAPI_DeleteOrderBy(c_char_p_user_id, c_char_p_user_id,
+                                    c_long(accOrderNo.encode()),
+                                    c_char_p(productCode.encode()),
+                                    c_char_p(clOrderId.encode()))
+    if ret == 0:
+        print(f'删除{productCode}订单成功-订单号：{accOrderNo}')
+    else:
+        raise Exception(f'删除{productCode}订单失败-订单号：{accOrderNo}-errcode：{ret}')
 
-def delete_order_by():
-    pass
 
 
 def delete_all_orders():
-    pass
+    ret = spdll.SPAPI_DeleteAllOrders(c_char_p_user_id, c_char_p_user_id)
+    if ret == 0:
+        print('删除全部订单成功')
+    else:
+        raise Exception('删除全部订单失败')
 
 
-def activate_order_by():
-    pass
+
+def activate_order_by(accOrderNo):
+    ret = spdll.SPAPI_ActiveateOrderBy(c_char_p_user_id, c_char_p_user_id, c_long(accOrderNo))
+    if ret == 0:
+        print(f'设置订单#{accOrderNo}为有效订单成功')
+    else:
+        raise Exception(f'设置订单#{accOrderNo}为有效订单失败')
 
 
 def activate_all_orders():
-    pass
+    ret = spdll.SPAPI_ActiveateAllOrders(c_char_p_user_id, c_char_p_user_id)
+    if ret == 0:
+        print('设置全部订单为有效订单成功')
+    else:
+        raise Exception('设置全部订单为有效订单失败')
 
 
-def inactivate_order_by():
-    pass
+
+def inactivate_order_by(accOrderNo):
+    ret = spdll.SPAPI_InactivateOrderBy(c_char_p_user_id, c_char_p_user_id, c_long(accOrderNo))
+    if ret == 0:
+        print(f'设置订单#{accOrderNo}为无效订单成功')
+    else:
+        raise Exception(f'设置订单#{accOrderNo}为无效订单失败')
 
 
 def inactivate_all_orders():
-    pass
+    ret = spdll.SPAPI_InactiveateAllOrders(c_char_p_user_id, c_char_p_user_id)
+    if ret == 0:
+        print('设置全部订单为无效订单成功')
+    else:
+        raise Exception('设置全部订单为无效订单失败')
 
 
-def send_marketmaking_order():
-    pass
+
+def send_marketmaking_order(*args):
+    mmorder = POINTER(SPApiMMOrder)()  # TODO mmorder
+    ret = spdll.SPAPI_SendMarketMakingOrder(mmorder)
+    if ret == 0:
+        print('造市商下单成功')
+    else:
+        raise Exception('造市商下单失败，errcode：{ret}')
+
 
 
 def get_pos_count():
@@ -202,106 +320,375 @@ def get_pos_count():
 
 
 def get_all_pos():
-    pass
+    all_pos = pointer(SPApiPos())
+    ret = spdll.SPAPI_GetAllPos(c_char_p_user_id, all_pos)
+    if ret == 0:
+        return all_pos
+    else:
+        raise Exception('获取全部持仓信息失败')
+
 
 
 def get_all_pos_by_array():
-    apiPsoList = POINTER(SPApiPos)()
-    if spdll.SPAPI_GetAllPosByArray(c_char_p_user_id, apiPsoList) == 0:
-        return apiPsoList
+    all_pos = POINTER(SPApiPos)()
+    ret = spdll.SPAPI_GetAllPosByArray(c_char_p_user_id, all_pos)
+    if ret == 0:
+        return all_pos
     else:
-        raise Exception('未获取持仓信息列表')
+        raise Exception('获取全部持仓信息列表失败')
 
 
-def get_pos_by_product():
-    pass
+def get_pos_by_product(prod_code):
+    product_pos = pointer(SPApiPos())
+    ret = spdll.SPAPI_GetPosByProduct(c_char_p_user_id, c_char_p(prod_code.encode()), product_pos)
+    if ret == 0:
+        return product_pos
+    else:
+        raise Exception(f'获取{prod_code}持仓信息列表失败')
 
 
 def get_trade_count():
-    return spdll.SPAPI_GetTradeCount(c_char_p_user_id, c_char_p_user_id)
+    ret = spdll.SPAPI_GetTradeCount(c_char_p_user_id, c_char_p_user_id)
+    if ret >=0 :
+        return ret
+    else:
+        raise Exception(f'获取成交数量失败，errcode：{ret}')
 
 
 def get_all_trades():
-    pass
+    all_trades = POINTER(SPApiTrade)()  # TODO SPA[iTrade
+    ret = spdll.SPAPI_GetAllTrades(c_char_p_user_id, c_char_p_user_id, all_trades)
+    if ret == 0:
+        return all_trades
+    else:
+        raise Exception(f'获取成交信息列表失败，errcode：{ret}')
 
 
 def get_all_trades_by_array():
-    pass
+    all_trades = POINTER(SPApiTrade)()  # TODO SPA[iTrade
+    ret = spdll.SPAPI_GetAllTrades(c_char_p_user_id, c_char_p_user_id, all_trades)
+    if ret == 0:
+        return all_trades
+    else:
+        raise Exception(f'获取成交信息列表失败，errcode：{ret}')
 
 
-def subscribe_price():
-    pass
+def subscribe_price(prod_code, mode):
+    mode_type = {0: '取消', 1:'订阅'}
+    ret = spdll.SPAPI_SubscribePrice(c_char_p_user_id, c_char_p(prod_code.encode()), c_int(mode))
+    if ret == 0:
+        print(f'{mode_type[mode]}@{prod_code}市场数据成功')
+    else:
+        raise Exception(f'{mode_type[mode]}@{prod_code}市场数据失败')
 
 
-def get_price_by_code():
-    pass
+def get_price_by_code(prod_code):
+    price_by_code = pointer(SPApiPrice())
+    ret = spdll.SPAPI_GetPriceByCode(c_char_p_user_id, c_char_p(prod_code.encode()), price_by_code)
+    if ret == 0:
+        return price_by_code
+    else:
+        raise Exception(f'获取@{prod_code}价格信息失败')
 
 
 def load_instrument_list():
-    pass
+    ret = spdll.SPAPI_LoadInstrumentList()
+    if ret >= 0:
+        print('加载所有合约系列信息成功')
+    else:
+        raise Exception('加载所有合约系列信息失败')
 
 
 def get_instrument_count():
-    pass
+    ret = spdll.SPAPI_GetInstrumentCount()
+    if ret >= 0:
+        return ret
+    else:
+        raise Exception('获取市场产品系列数量失败')
 
 
 def get_instrument():
+    inst_list = pointer(SPApiInstrument())  # TODO SPApiInstrument
+    ret = spdll.SPAPI_GetInstrument(inst_list)
+    if ret == 0:
+        return inst_list
+    else:
+        raise Exception('获取产品系列信息失败')
     pass
 
 
 def get_instrument_by_array():
+    inst_list = pointer(SPApiInstrument())  # TODO SPApiInstrument
+    ret = spdll.SPAPI_GetInstrument(inst_list)
+    if ret == 0:
+        return inst_list
+    else:
+        raise Exception('获取产品系列信息失败')
     pass
 
 
-def get_instrument_by_code():
-    pass
+def get_instrument_by_code(inst_code):
+    inst_by_code = pointer(SPApiInstrument())
+    ret = spdll.SPAPI_GetInstrumentByCode(c_char_p(inst_code.encode()), inst_by_code)
+    if ret == 0:
+        return inst_by_code
+    else:
+        raise Exception(f'获取@{inst_code}产品系列信息失败,errcode:{ret}')
+
 
 def get_product_count():
-    pass
+    ret = spdll.SPAPI_GetProductCount()
+    if ret >= 0 :
+        return ret
+    else:
+        raise Exception('获取市场合约数量失败')
 
 
 def get_product():
-    pass
+    prod_list = pointer(SPApiProduct())  # TODO SPApiProduct
+    ret = spdll.SPAPI_GetProduct(prod_list)
+    if ret == 0 :
+        return prod_list
+    else:
+        raise Exception('获取已加载的产品合约信息失败')
 
 
 def get_product_by_array():
-    pass
+    prod_list = POINTER(SPApiProduct)()  # TODO SPApiProduct
+    ret = spdll.SPAPI_GetProduct(prod_list)
+    if ret == 0 :
+        return prod_list
+    else:
+        raise Exception('获取已加载的产品合约信息失败')
 
 
-def get_product_by_code():
-    pass
+def get_product_by_code(prod_code):
+    prod_by_code = POINTER(SPApiProduct)()  # TODO SPApiProduct
+    ret = spdll.SPAPI_GetProductByCode(c_char_p(prod_code), prod_by_code)
+    if ret == 0:
+        return prod_by_code
+    else:
+        raise Exception(f'获取@{prod_code}合约信息失败')
+
 
 
 def get_accbal_count():
-    pass
+    ret = spdll.SPAPI_GetAccBalCount(c_char_p_user_id)
+    if ret >= 0:
+        return ret
+    else:
+        raise Exception('获取现金结余数量失败')
 
 
 def get_all_accbal():
-    pass
-
-
-def get_all_accbal():
-    pass
+    all_accbal = pointer(SPApiAccBal())  # TODO SPApiAccBal
+    ret = spdll.SPAPI_GetAllAccBal(c_char_p_user_id, all_accbal)
+    if ret == 0:
+        return all_accbal
+    else:
+        raise Exception('获取账户全部现金结余信息失败')
 
 
 def get_all_accbal_by_array():
-    pass
+    all_accbal = POINTER(SPApiAccBal)()  # TODO SPApiAccBal
+    ret = spdll.SPAPI_GetAllAccBal(c_char_p_user_id, all_accbal)
+    if ret == 0:
+        return all_accbal
+    else:
+        raise Exception('获取账户全部现金结余信息失败')
 
 
-def get_accbal_by_currency():
-    pass
-
-
-def subscribe_ticker():
-    pass
-
-
-def subscribe_quote_request():
-    pass
+def get_accbal_by_currency(ccy):
+    accbal_by_currency = pointer(SPApiAccBal())  # TODO SPApiAccBal
+    ret = spdll.SPAPI_GetAllAccBal(c_char_p_user_id,c_char_p(ccy), accbal_by_currency)
+    if ret == 0:
+        return accbal_by_currency
+    else:
+        raise Exception(f'获取{ccy}现金结余信息失败')
 
 
 
+def subscribe_ticker(prod_code, mode):
+    """
+    订阅/取消指定合约的市场成交信息
+    :param prod_code:合约代码
+    :param mode:0:取消市场成交记录 1:订阅市场成交记录
+    :return:
+    """
+    mode_type = {0: '取消', 1: '订阅'}
+    ret = spdll.SPAPI_SubscribeTicker(c_char_p_user_id, c_char_p(prod_code.encode()), c_int(mode))
+    if ret == 0:
+        print(f'{mode_type[mode]}@{prod_code}市场成交信息成功')
+    else:
+        raise Exception(f'{mode_type[mode]}@{prod_code}市场成交信息失败')
 
+
+def subscribe_quote_request(prod_code, mode):
+    """
+    订阅/取消指定合约的要求报价行情
+    :param prod_code: 合约代码
+    :param mode:0:取消此合约的要求报价行情  1:订阅此合约的要求报价行情.
+    :return:
+    """
+    mode_type = {0: '取消', 1: '订阅'}
+    ret = spdll.SPAPI_SubscribeQuoteRequest (c_char_p_user_id, c_char_p(prod_code.encode()), c_int(mode))
+    if ret == 0:
+        print(f'{mode_type[mode]}@{prod_code}报价行情成功')
+    else:
+        raise Exception(f'{mode_type[mode]}@{prod_code}报价行情失败')
+
+def subscribe_all_quote_request(mode):
+    """
+    订阅/取消所有合约的要求报价行情
+    :param mode:0:取消此合约的要求报价行情  1:订阅此合约的要求报价行情.
+    :return:
+    """
+    mode_type = {0: '取消', 1: '订阅'}
+    ret = spdll.SPAPI_SubscribeQuoteRequest (c_char_p_user_id, c_int(mode))
+    if ret == 0:
+        print(f'{mode_type[mode]}所有报价行情成功')
+    else:
+        raise Exception(f'{mode_type[mode]}所有报价行情失败')
+
+
+def get_acc_info():
+    """
+    获取帐户信息
+    :return:
+    """
+    acc_info = SPApiAccInfo()
+    ret = spdll.SPAPI_GetAccInfo(c_char_p_user_id, pointer(acc_info))
+    if ret == 0:
+        return acc_info
+    else:
+        raise Exception('获取账户信息失败')
+
+
+def get_dll_version():
+    """
+    查询 DLL 版本信息
+    :return:
+    """
+    c_dll_ver_no = c_char_p()
+    c_dll_rel_no = c_char_p()
+    c_dll_suffix = c_char_p()
+    ret = spdll.SPAPI_GetDllVersion(c_dll_ver_no, c_dll_rel_no, c_dll_suffix)
+    if ret == 0:
+        version = {'DLL的版本信息': c_dll_ver_no,
+                   '发布版本号': c_dll_rel_no,
+                   '更新时间': c_dll_suffix}
+        return version
+    else:
+        raise Exception('查询DLL版本信息失败')
+
+
+def load_productinfolist_by_market(market_code):
+    """
+    根据交易所加载该交易所下的合约信息
+    :param market_code:
+    :return:
+    """
+    ret = spdll.SPAPI_LoadProductInfoListByMarket(c_char_p(market_code.encode()))
+    if ret >= 0:
+        print(f'请求加载{market_code}交易所合约信息成功')
+    else:
+        raise Exception(f'请求加载{market_code}交易所合约信息失败')
+
+
+def load_productinfolist_by_code(inst_code):
+    """
+    根据产品系列代码加载该系列下的合约信息
+    :param inst_code:产品系列代码
+    :return:
+    """
+    ret = spdll.SPAPI_LoadProductInfoListByCode(c_char_p(inst_code.encode()))
+    if ret >= 0:
+        print(f'请求加载{inst_code}产品系列代码合约信息成功')
+    else:
+        raise Exception(f'请求加载{inst_code}产品系列代码合约信息失败')
+
+
+def set_ApiLog_path(path):
+    """
+    设置日志的存放位置
+    :param path:路径
+    :return:
+    """
+    ret = spdll.SPAPI_SetApiLogPath(c_char_p(path))
+    if ret == 0:
+        print('设置日志存放位置成功')
+    else:
+        raise Exception('设置日志存放位置失败')
+
+
+def get_ccy_rate_by_ccy(ccy):
+    """
+    获取兑换率
+    :param ccy:货币名
+    :return:
+    """
+    c_rate = c_double()
+    ret = spdll.SPAPI_GetCcyRateByCcy(c_char_p_user_id, c_char_p(ccy.encode()), byref(c_rate))
+    if ret == 0:
+        return c_rate
+    else:
+        raise Exception('获取兑换率失败')
+
+
+def account_login(user_id, acc_no):
+    """
+    该方法只针对 AE,当 AE 登录后可选择性登录账户
+    :param user_id: 登入时用户帐号(即AE登入时账号)
+    :param acc_no:指定客户账户名
+    :return:
+    """
+    ret = spdll.SPAPI_AccountLogin(c_char_p(user_id.encode()), c_char_p(acc_no.encode()))
+    if ret == 0:
+        print(f'登入{acc_no}成功')
+    else:
+        raise Exception(f'登入{acc_no}失败')
+
+
+def account_login(user_id, acc_no):
+    """
+    该方法只针对 AE,当 AE 选择账户后可用它来释放账户
+    :param user_id: 登入时用户帐号(即AE登入时账号)
+    :param acc_no:指定客户账户名
+    :return:
+    """
+    ret = spdll.SPAPI_AccountLogin(c_char_p(user_id.encode()), c_char_p(acc_no.encode()))
+    if ret == 0:
+        print(f'释放{acc_no}成功')
+    else:
+        raise Exception(f'释放{acc_no}失败')
+
+
+def send_acc_control(user_id, acc_no, ctrl_mask, ctrl_level):
+    """
+    户口控制，该方法只针对 AE
+    :param user_id:
+    :param acc_no:
+    :param ctrl_mask:CTRLMASK_CTRL_LEVEL 1 //户口控制:级别
+                     CTRLMASK_KICKOUT 2 //户口控制:踢走
+                     当ctrl_mask为1设置户口级数，为2时踢出用户登录状态
+    :param ctrl_level:0:"级别0 - 正常客户使用",
+                      1:"级别1 - 暂停客户交易",
+                      2:"级别2 - 暂停客户登入及交易",
+                      3:"级别3 - 冻结户口",
+                      4:"级别4 – 只限客户交易",
+                        当ctrl_mask为1，ctrl_level输入0-4的级别,
+                        当ctrl_mask为2，ctrl_level输入0就可以了。
+    :return:
+    """
+    ret = spdll.SPAPI_SetAccControl(c_char_p(user_id.encode()),
+                                    c_char_p(acc_no.encode()),
+                                    c_char(ctrl_mask.encode()),
+                                    c_char(ctrl_level.encode())
+                                    )
+    if ret == 0:
+        print('请求控制成功')
+    else:
+        raise Exception('请求控制失败')
 
 
 # ------------------------callback_function----------------------------------+
@@ -313,6 +700,9 @@ def on_login_reply(user_id, ret_code, ret_msg):
     :param ret_msg:登录信息.如果登录成功返回的是一个空字符串.如果登录失败会返回相应的错误提示
     :return:
     """
+    # print(user_id)
+    # if not ret_code:
+    #     print('登录成功')
     pass
 
 def on_pswchange_reply(ret_code, ret_msg):
@@ -547,64 +937,95 @@ class register_base:
 
 callback_register_cfun_ctype = {'on_login_reply':
                                     [spdll.SPAPI_RegisterLoginReply, c_char_p, c_long, c_char_p],
-                                'on_pswchange_reply':
-                                    [spdll.SPAPI_RegisterPswChangeReply, c_long, c_char_p],
-                                'on_order_request_failed':
-                                    [spdll.SPAPI_RegisterOrderRequestFailed, c_int, POINTER(SPApiOrder)],
-                                'on_order_before_send_report':
-                                    [spdll.SPAPI_RegisterOrderBeforeSendReport, POINTER(SPApiOrder)],
-                                'on_mmorder_request_failed':
-                                    [spdll.SPAPI_RegisterMMOrderRequestFailed, POINTER(SPApiMMOrder), c_long, c_char_p],
-                                'on_mmorder_before_send_report':
-                                    [spdll.SPAPI_RegisterMMOrderBeforeSendReport, POINTER(SPApiMMOrder)],
-                                'on_quote_request_received_report':
-                                    [spdll.SPAPI_RegisterQuoteRequestReceivedReport, c_char_p, c_char_p, c_long],
-                                'on_trade_report':
-                                    [spdll.SPAPI_RegisterTradeReport, c_long, POINTER(SPApiTrade)],
-                                'on_load_trade_ready_push':
-                                    [spdll.SPAPI_RegisterLoadTradeReadyPush, c_long, POINTER(SPApiTrade)],
+                                # 'on_pswchange_reply':
+                                #     [spdll.SPAPI_RegisterPswChangeReply, c_long, c_char_p],
+                                # 'on_order_request_failed':
+                                #     [spdll.SPAPI_RegisterOrderRequestFailed, c_int, SPApiOrder],
+                                # 'on_order_before_send_report':
+                                #     [spdll.SPAPI_RegisterOrderBeforeSendReport, SPApiOrder],
+                                # 'on_mmorder_request_failed':
+                                #     [spdll.SPAPI_RegisterMMOrderRequestFailed, SPApiMMOrder, c_long, c_char_p],
+                                # 'on_mmorder_before_send_report':
+                                #     [spdll.SPAPI_RegisterMMOrderBeforeSendReport, SPApiMMOrder],
+                                # 'on_quote_request_received_report':
+                                #     [spdll.SPAPI_RegisterQuoteRequestReceivedReport, c_char_p, c_char_p, c_long],
+                                # 'on_trade_report':
+                                #     [spdll.SPAPI_RegisterTradeReport, c_long, SPApiTrade],
+                                # 'on_load_trade_ready_push':
+                                #     [spdll.SPAPI_RegisterLoadTradeReadyPush, c_long, SPApiTrade],
                                 'on_api_price_update':
-                                    [spdll.SPAPI_RegisterApiPriceUpdate, POINTER(SPApiPrice)],
+                                    [spdll.SPAPI_RegisterApiPriceUpdate, SPApiPrice],
                                 'on_ticker_update':
-                                    [spdll.SPAPI_RegisterTickerUpdate, POINTER(SPApiTicker)],
-                                'on_order_report':
-                                    [spdll.SPAPI_RegisterOrderReport, c_long, POINTER(SPApiOrder)],
-                                'on_instrument_list_reply':
-                                    [spdll.SPAPI_RegisterInstrumentListReply, c_long, c_bool, c_char_p],
-                                'on_business_date_reply':
-                                    [spdll.SPAPI_RegisterBusinessDateReply, c_long],
-                                'on_connecting_reply':
-                                    [spdll.SPAPI_RegisterConnectingReply, c_long, c_long],
-                                'on_account_login_reply':
-                                    [spdll.SPAPI_RegisterAccountLoginReply, c_char_p, c_long, c_char_p],
-                                'on_account_logout_reply':
-                                    [spdll.SPAPI_RegisterAccountLogoutReply, c_char_p, c_long, c_char_p],
-                                'on_account_info_push':
-                                    [spdll.SPAPI_RegisterAccountInfoPush, POINTER(SPApiAccInfo)],
-                                'on_account_position_push':
-                                    [spdll.SPAPI_RegisterAccountPositionPush, POINTER(SPApiPos)],
-                                'on_updated_account_position_push':
-                                    [spdll.SPAPI_RegisterAccountInfoPush, POINTER(SPApiAccInfo)],
-                                'on_updated_account_balance_push':
-                                    [spdll.SPAPI_RegisterUpdatedAccountBalancePush, POINTER(SPApiAccBal)],
-                                'on_product_list_by_code_reply':
-                                    [spdll.SPAPI_RegisterProductListByCodeReply, c_long, c_char_p, c_bool, c_char_p],
-                                'on_account_control_reply':
-                                    [spdll.SPAPI_RegisterAccountControlReply, c_long, c_char_p],
+                                    [spdll.SPAPI_RegisterTickerUpdate, SPApiTicker],
+                                # 'on_order_report':
+                                #     [spdll.SPAPI_RegisterOrderReport, c_long, SPApiOrder],
+                                # 'on_instrument_list_reply':
+                                #     [spdll.SPAPI_RegisterInstrumentListReply, c_long, c_bool, c_char_p],
+                                # 'on_business_date_reply':
+                                #     [spdll.SPAPI_RegisterBusinessDateReply, c_long],
+                                # 'on_connecting_reply':
+                                #     [spdll.SPAPI_RegisterConnectingReply, c_long, c_long],
+                                # 'on_account_login_reply':
+                                #     [spdll.SPAPI_RegisterAccountLoginReply, c_char_p, c_long, c_char_p],
+                                # 'on_account_logout_reply':
+                                #     [spdll.SPAPI_RegisterAccountLogoutReply, c_char_p, c_long, c_char_p],
+                                # 'on_account_info_push':
+                                #     [spdll.SPAPI_RegisterAccountInfoPush, SPApiAccInfo],
+                                # 'on_account_position_push':
+                                #     [spdll.SPAPI_RegisterAccountPositionPush, SPApiPos],
+                                # 'on_updated_account_position_push':
+                                #     [spdll.SPAPI_RegisterAccountInfoPush, SPApiAccInfo],
+                                # 'on_updated_account_balance_push':
+                                #     [spdll.SPAPI_RegisterUpdatedAccountBalancePush, SPApiAccBal],
+                                # 'on_product_list_by_code_reply':
+                                #     [spdll.SPAPI_RegisterProductListByCodeReply, c_long, c_char_p, c_bool, c_char_p],
+                                # 'on_account_control_reply':
+                                #     [spdll.SPAPI_RegisterAccountControlReply, c_long, c_char_p],
                                 }
+
+
+
 import sys
+# for k, v in callback_register_cfun_ctype.items():
+#     def register_init(self, func):
+#         register_base.__init__(self, func, *v)
+#     _doc = getattr(getattr(sys.modules[__name__], k), '__doc__')
+#     setattr(sys.modules[__name__],
+#             k,
+#             type(k,
+#                  (register_base, ),
+#                  dict(__init__= register_init,
+#                       __doc__= _doc))
+#                  )
+#             )
+def _on_login_reply_init(self, func):
+    register_base.__init__(self, func, spdll.SPAPI_RegisterLoginReply, c_char_p, c_long, c_char_p)
+
+
+def _on_ticker_update_init(self, func):
+    register_base.__init__(self, func, spdll.SPAPI_RegisterTickerUpdate, SPApiTicker)
+
+
+def _on_api_price_update_init(self, func):
+    register_base.__init__(self, func, spdll.SPAPI_RegisterApiPriceUpdate, SPApiPrice)
+
+
+
+
 for k, v in callback_register_cfun_ctype.items():
-    def register_init(self, func):
-        register_base.__init__(self, func, v[0], *v[1:])
     _doc = getattr(getattr(sys.modules[__name__], k), '__doc__')
     setattr(sys.modules[__name__],
-            k,
-            type(k,
-                 (register_base, ),
-                 dict(__init__=register_init,
-                      __doc__=_doc)
-                 )
+                k,
+                type(k,
+                     (register_base, ),
+                     dict(__init__= getattr(sys.modules[__name__], f'_{k}_init'),
+                          __doc__= _doc)
+                     )
             )
+# @on_ticker_update
+# def print_ticker(ticker):
+#     print(f'{ticker.TickerTime}-Price:{ticker.Price}-Qty:{ticker.Qty}')
+
 # _login_reply_func = WINFUNCTYPE(None, c_char_p, c_long, c_char_p)(on_login_reply)                  # 工厂函数生成回调函数，参数由回调函数返回类型和参数构成,并对接python回调函数,构造一个ctype的回调函数
 # _register_login_reply = spdll.SPAPI_RegisterLoginReply           # 注册函数
 # _register_login_reply.restype = None                             # 注册函数的返回类型
@@ -654,8 +1075,8 @@ for k, v in callback_register_cfun_ctype.items():
 # _register_api_price_update = spdll.SPAPI_RegisterApiPriceUpdate
 # _register_api_price_update.restype = None
 # _register_api_price_update(_api_price_update_func)
-
-# _ticker_update_func = WINFUNCTYPE(None, POINTER(SPApiTicker))(on_ticker_update)
+#
+# _ticker_update_func = WINFUNCTYPE(None, SPApiTicker)(on_ticker_update)
 # _register_ticker_update = spdll.SPAPI_RegisterTickerUpdate
 # _register_ticker_update.restype = None
 # _register_ticker_update(_ticker_update_func)
