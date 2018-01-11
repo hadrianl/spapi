@@ -117,15 +117,15 @@ class SPApiTrade(Structure):
 
 
 class SPApiPrice(Structure):
-    _fields_ = [('Bid[SP_MAX_DEPTH]', c_double),  # 买入价
-                ('BidQty[SP_MAX_DEPTH]', c_int32),  # 买入量
-                ('BidTicket[SP_MAX_DEPTH]', c_int32),  # 买指令数量
-                ('Ask[SP_MAX_DEPTH]', c_double),  # 卖出价
-                ('AskQty[SP_MAX_DEPTH]', c_int32),  # 卖出量
-                ('AskTicket[SP_MAX_DEPTH]', c_int32),  # 卖指令数量
-                ('Last[SP_MAX_LAST]', c_double),  # 成交价
-                ('LastQty[SP_MAX_LAST]', c_int32),  # 成交数量
-                ('LastTime[SP_MAX_LAST]', c_uint32),  # 成交时间
+    _fields_ = [('Bid', c_double),  # 买入价
+                ('BidQty', c_int32),  # 买入量
+                ('BidTicket', c_int32),  # 买指令数量
+                ('Ask', c_double),  # 卖出价
+                ('AskQty', c_int32),  # 卖出量
+                ('AskTicket', c_int32),  # 卖指令数量
+                ('Last', c_double),  # 成交价
+                ('LastQty', c_int32),  # 成交数量
+                ('LastTime', c_uint32),  # 成交时间
                 ('Equil', c_double),  # 平衡价
                 ('Open', c_double),
                 ('High', c_double),

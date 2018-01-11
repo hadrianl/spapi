@@ -169,21 +169,22 @@ ret_code_msg_order = {0, '表示成功',
                       -9,'开仓/平仓,止赚价格不正确',
                       -10,'开仓/平仓,止损价格不正确'}
 
-def add_order(*args):
-    order = SPApiOrder(*args)
-    ret = spdll.SPAPI_AddOrder(pointer(order))
+def add_order(*args, **kwargs):
+    order_p = pointer(SPApiOrder(*args, **kwargs))
+    ret = spdll.SPAPI_AddOrder(order_p)
     if ret == 0:
-        print('添加订单成功')
+        return order_p
     else:
-        raise Exception(f'添加订单失败，失败原因：{ret_code_msg_order[ret]}')
+        raise Exception(f'添加订单失败，失败原因：{ret}')
+        return order_p
 
 
 
-def add_inactive_order(*args):
-    order = SPApiOrder(*args)
-    ret = spdll.SPAPI_AddOrder(pointer(order))
+def add_inactive_order(*args, **kwargs):
+    order_p = pointer(SPApiOrder(*args, **kwargs))
+    ret = spdll.SPAPI_AddOrder(order)
     if ret == 0:
-        print('添加无效订单成功')
+        return order_p
     else:
         raise Exception(f'添加无效订单失败，失败原因：{ret_code_msg_order[ret]}')
 
@@ -191,10 +192,10 @@ ret_code_msg_change_order={0: '成功',
                             -1: '用户未登入',
                             -2: '无记录',
                             -3: '价格输入有误'}
-def change_order(order, org_price, org_qty):
-    ret = spdll.SPAPI_ChangeOrder(c_char_p_user_id, pointer(order), c_double(org_price), c_double(org_qty))
+def change_order(order_p, org_price, org_qty):
+    ret = spdll.SPAPI_ChangeOrder(c_char_p_user_id, order_p, c_double(org_price), c_double(org_qty))
     if ret == 0:
-        print('修改工作中的订单成功')
+        return order_p
     else:
         raise Exception(f'修改工作中的订单失败，失败原因：{ret_code_msg_change_order[ret]}')
 
@@ -214,10 +215,10 @@ def change_order_by(accOrderNo, org_price, org_qty, newPrice, newQty):
 
 
 def get_order_by_orderNo(order_no):
-    order = SPApiOrder()
-    ret = spdll.SPAPI_GetOrderByOrderNo(c_char_p_user_id, c_char_p_user_id, c_long(order_no), pointer(order))
+    order_p = pointer(SPApiOrder())
+    ret = spdll.SPAPI_GetOrderByOrderNo(c_char_p_user_id, c_char_p_user_id, c_long(order_no), order_p)
     if ret == 0:
-        return order
+        return order_p
     else:
         raise Exception('获取订单失败！')
 
@@ -299,8 +300,8 @@ def inactivate_all_orders():
 
 
 def send_marketmaking_order(*args):
-    mmorder = POINTER(SPApiMMOrder)()  # TODO mmorder
-    ret = spdll.SPAPI_SendMarketMakingOrder(mmorder)
+    mmorder = SPApiMMOrder(*args)  # TODO mmorder
+    ret = spdll.SPAPI_SendMarketMakingOrder(pointer(mmorder))
     if ret == 0:
         print('造市商下单成功')
     else:
@@ -330,8 +331,8 @@ def get_all_pos():
 
 
 def get_all_pos_by_array():
-    all_pos = POINTER(SPApiPos)()
-    ret = spdll.SPAPI_GetAllPosByArray(c_char_p_user_id, all_pos)
+    all_pos = (SPApiPos * get_pos_count())()
+    ret = spdll.SPAPI_GetAllPosByArray(c_char_p_user_id, byref(all_pos))
     if ret == 0:
         return all_pos
     else:
@@ -339,8 +340,8 @@ def get_all_pos_by_array():
 
 
 def get_pos_by_product(prod_code):
-    product_pos = pointer(SPApiPos())
-    ret = spdll.SPAPI_GetPosByProduct(c_char_p_user_id, c_char_p(prod_code.encode()), product_pos)
+    product_pos = SPApiPos()
+    ret = spdll.SPAPI_GetPosByProduct(c_char_p_user_id, c_char_p(prod_code.encode()), byref(product_pos))
     if ret == 0:
         return product_pos
     else:
@@ -365,8 +366,8 @@ def get_all_trades():
 
 
 def get_all_trades_by_array():
-    all_trades = POINTER(SPApiTrade)()  # TODO SPA[iTrade
-    ret = spdll.SPAPI_GetAllTrades(c_char_p_user_id, c_char_p_user_id, all_trades)
+    all_trades = (SPApiTrade * get_trade_count())()
+    ret = spdll.SPAPI_GetAllTrades(c_char_p_user_id, c_char_p_user_id, byref(all_trades))
     if ret == 0:
         return all_trades
     else:
@@ -383,8 +384,8 @@ def subscribe_price(prod_code, mode):
 
 
 def get_price_by_code(prod_code):
-    price_by_code = pointer(SPApiPrice())
-    ret = spdll.SPAPI_GetPriceByCode(c_char_p_user_id, c_char_p(prod_code.encode()), price_by_code)
+    price_by_code = SPApiPrice()
+    ret = spdll.SPAPI_GetPriceByCode(c_char_p_user_id, c_char_p(prod_code.encode()), byref(price_by_code))
     if ret == 0:
         return price_by_code
     else:
@@ -408,8 +409,8 @@ def get_instrument_count():
 
 
 def get_instrument():
-    inst_list = pointer(SPApiInstrument())  # TODO SPApiInstrument
-    ret = spdll.SPAPI_GetInstrument(inst_list)
+    inst_list = SPApiInstrument()  # TODO SPApiInstrument
+    ret = spdll.SPAPI_GetInstrument(byref(inst_list))
     if ret == 0:
         return inst_list
     else:
@@ -418,8 +419,8 @@ def get_instrument():
 
 
 def get_instrument_by_array():
-    inst_list = pointer(SPApiInstrument())  # TODO SPApiInstrument
-    ret = spdll.SPAPI_GetInstrument(inst_list)
+    inst_list = (SPApiInstrument * get_instrument_count())()
+    ret = spdll.SPAPI_GetInstrument(byref(inst_list))
     if ret == 0:
         return inst_list
     else:
@@ -428,8 +429,8 @@ def get_instrument_by_array():
 
 
 def get_instrument_by_code(inst_code):
-    inst_by_code = pointer(SPApiInstrument())
-    ret = spdll.SPAPI_GetInstrumentByCode(c_char_p(inst_code.encode()), inst_by_code)
+    inst_by_code = SPApiInstrument()
+    ret = spdll.SPAPI_GetInstrumentByCode(c_char_p(inst_code.encode()), byref(inst_by_code))
     if ret == 0:
         return inst_by_code
     else:
@@ -454,8 +455,8 @@ def get_product():
 
 
 def get_product_by_array():
-    prod_list = POINTER(SPApiProduct)()  # TODO SPApiProduct
-    ret = spdll.SPAPI_GetProduct(prod_list)
+    prod_list = (SPApiProduct * get_product_count())()  # TODO SPApiProduct
+    ret = spdll.SPAPI_GetProduct(byref(prod_list))
     if ret == 0 :
         return prod_list
     else:
@@ -463,8 +464,8 @@ def get_product_by_array():
 
 
 def get_product_by_code(prod_code):
-    prod_by_code = POINTER(SPApiProduct)()  # TODO SPApiProduct
-    ret = spdll.SPAPI_GetProductByCode(c_char_p(prod_code), prod_by_code)
+    prod_by_code = SPApiProduct()  # TODO SPApiProduct
+    ret = spdll.SPAPI_GetProductByCode(c_char_p(prod_code), byref(prod_by_code))
     if ret == 0:
         return prod_by_code
     else:
@@ -490,8 +491,8 @@ def get_all_accbal():
 
 
 def get_all_accbal_by_array():
-    all_accbal = POINTER(SPApiAccBal)()  # TODO SPApiAccBal
-    ret = spdll.SPAPI_GetAllAccBal(c_char_p_user_id, all_accbal)
+    all_accbal = (SPApiAccBal * get_accbal_count())()
+    ret = spdll.SPAPI_GetAllAccBal(c_char_p_user_id, byref(all_accbal))
     if ret == 0:
         return all_accbal
     else:
@@ -499,8 +500,8 @@ def get_all_accbal_by_array():
 
 
 def get_accbal_by_currency(ccy):
-    accbal_by_currency = pointer(SPApiAccBal())  # TODO SPApiAccBal
-    ret = spdll.SPAPI_GetAllAccBal(c_char_p_user_id,c_char_p(ccy), accbal_by_currency)
+    accbal_by_currency = SPApiAccBal()
+    ret = spdll.SPAPI_GetAllAccBal(c_char_p_user_id,c_char_p(ccy), byref(accbal_by_currency))
     if ret == 0:
         return accbal_by_currency
     else:
@@ -557,7 +558,7 @@ def get_acc_info():
     :return:
     """
     acc_info = SPApiAccInfo()
-    ret = spdll.SPAPI_GetAccInfo(c_char_p_user_id, pointer(acc_info))
+    ret = spdll.SPAPI_GetAccInfo(c_char_p_user_id, byref(acc_info))
     if ret == 0:
         return acc_info
     else:

@@ -23,16 +23,13 @@ def print_ticker(ticker):
 
 @on_api_price_update
 def printprice(price):
-    print(type(price))
-    print(price)
-
+    text = f"""Time:{price.LastTime}
+Bid:{price.Bid}   Ask:{price.Ask}
+BidQty:{price.BidQty}   AskQty:{price.AskQty}"""
+    print(text)
 
 login()
 time.sleep(1)
-get_login_status(80)
-get_login_status(81)
-get_login_status(83)
-get_login_status(88)
 subscribe_ticker('HSIF8', 1)
 time.sleep(10)
 logout()
