@@ -143,7 +143,7 @@ class SPApiPrice(Structure):
                 ('Suspend', c_bool),  # 是否停牌
                 ('ExpiryYMD', c_int32),  # 产品到期日期
                 ('ContractYMD', c_int32),  # 合约到期日期
-                ('TImestamp', c_int32)  # 行情更新时间
+                ('Timestamp', c_int32)  # 行情更新时间
                 ]
 
 
