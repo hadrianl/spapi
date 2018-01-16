@@ -12,22 +12,38 @@ import zmq
 from zmq import Context
 import pymysql as pm
 import time
-
+import configparser
+conf = configparser.ConfigParser()
+conf.read('conf.ini')
+dbconfig = {'host': conf.get('MYSQL', 'host'),
+            'port': conf.getint('MYSQL', 'port'),
+            'user': conf.get('MYSQL', 'user'),
+            'password': conf.get('MYSQL', 'password'),
+            'db': conf.get('MYSQL', 'db'),
+            'cursorclass': pm.cursors.DictCursor
+            }
 ctx1 = Context()
 ctx2 = Context()
 ctx3 = Context()
 ticker_socket = ctx1.socket(zmq.PUB)
 price_socket = ctx2.socket(zmq.PUB)
 rep_socket = ctx3.socket(zmq.REP)
-ticker_socket.bind('tcp://*: 6868')
-price_socket.bind('tcp://*: 6869')
-rep_socket.bind('tcp://*: 6666')
-conn = pm.connect(host='192.168.2.226', port=3306, user='kairuitouzi', password='kairuitouzi', db='carry_investment', cursorclass=pm.cursors.DictCursor)
+ticker_socket.bind(f'tcp://*: {conf.getint("SOCKET_PORT", "ticker_pub")}')
+price_socket.bind(f'tcp://*: {conf.getint("SOCKET_PORT", "price_pub")}')
+rep_socket.bind(f'tcp://*: {conf.getint("SOCKET_PORT", "handle_rep")}')
+conn = pm.connect(**dbconfig)
 cursor = conn.cursor()
 
 from datetime import datetime
+spid = 'SP_ID3'
 initialize()
-set_login_info(**config3)
+sp_config = {'host': conf.get(spid, 'host'),
+             'port': conf.getint(spid, 'port'),
+             'License': conf.get(spid, 'License'),
+             'app_id': conf.get(spid, 'app_id'),
+             'user_id': conf.get(spid, 'user_id'),
+             'password': conf.get(spid, 'password')}
+set_login_info(**sp_config)
 
 @on_login_reply  # 登录成功时候调用
 def reply(user_id, ret_code, ret_msg):
@@ -83,7 +99,7 @@ if __name__ == '__main__':
                     logout()
                     unintialize()
                     is_login = False
-                    rep_socket.send_string(f'已登出---{prodcode}')
+                    rep_socket.send_string(f'{sp_config["user_id"]}已登出---{prodcode}')
                     break
                 elif handle =='login':
                     rep_socket.send_string('已经登录中，请勿重复登陆')
@@ -97,9 +113,17 @@ if __name__ == '__main__':
             if handle == 'login':
                 is_login = True
                 initialize()
-                set_login_info(**config3)
+                if prodcode in ['SP_ID1', 'SP_ID2', 'SP_ID3']:
+                    spid = prodcode
+                    sp_config = {'host': conf.get(spid, 'host'),
+                                 'port': conf.getint(spid, 'port'),
+                                 'License': conf.get(spid, 'License'),
+                                 'app_id': conf.get(spid, 'app_id'),
+                                 'user_id': conf.get(spid, 'user_id'),
+                                 'password': conf.get(spid, 'password')}
+                    set_login_info(**sp_config)
                 time.sleep(1)
                 login()
-                rep_socket.send_string(f'已登入---{prodcode}')
+                rep_socket.send_string(f'{sp_config["user_id"]}已登入---{prodcode}')
             else:
                 time.sleep(1)
