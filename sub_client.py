@@ -74,7 +74,6 @@ class sub_price:
 
     def _run(self, func):
         while self._is_active:
-            print('sffsf')
             price = price_sub_socket.recv_pyobj()
             func(price)
 
