@@ -18,13 +18,13 @@ poller.register(ticker_sub_socket, zmq.POLLIN)
 ctx2 = Context()
 price_sub_socket = ctx2.socket(zmq.SUB)
 price_sub_socket.connect('tcp://192.168.2.237:6869')
-ticker_sub_socket.setsockopt_unicode(zmq.SUBSCRIBE, '')
+price_sub_socket.setsockopt_unicode(zmq.SUBSCRIBE, '')
 poller.register(ticker_sub_socket, zmq.POLLIN)
 ctx3 = Context()
 req_price_socket = ctx3.socket(zmq.REQ)
 req_price_socket.connect('tcp://192.168.2.237:6870')
-ctx3 = Context()
-handle_socket = ctx3.socket(zmq.REQ)
+ctx4 = Context()
+handle_socket = ctx4.socket(zmq.REQ)
 handle_socket.connect('tcp://192.168.2.237:6666')
 
 class sub_ticker:
@@ -70,11 +70,12 @@ class sub_price:
     def __init__(self,prodcode):
         self._prodcode = prodcode
         self._is_active = False
+        self._is_sub = False
 
     def _run(self, func):
         while self._is_active:
+            print('sffsf')
             price = price_sub_socket.recv_pyobj()
-            # if price.ProdCode.decode() == self._prodcode:
             func(price)
 
     def __call__(self, func):
