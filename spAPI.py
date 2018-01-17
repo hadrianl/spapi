@@ -415,7 +415,8 @@ def get_price_by_code(prod_code):
     if ret == 0:
         return price_by_code
     else:
-        raise Exception(f'获取@{prod_code}价格信息失败,errcode:{ret}')
+        print(f'获取@{prod_code}价格信息失败,errcode:{ret}')
+        return price_by_code
 
 
 def load_instrument_list():

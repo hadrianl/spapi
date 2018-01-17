@@ -18,8 +18,11 @@ poller.register(ticker_sub_socket, zmq.POLLIN)
 ctx2 = Context()
 price_sub_socket = ctx2.socket(zmq.SUB)
 price_sub_socket.connect('tcp://192.168.2.237:6869')
-price_sub_socket.setsockopt_unicode(zmq.SUBSCRIBE, '')
-poller.register(price_sub_socket, zmq.POLLIN)
+ticker_sub_socket.setsockopt_unicode(zmq.SUBSCRIBE, '')
+poller.register(ticker_sub_socket, zmq.POLLIN)
+ctx3 = Context()
+req_price_socket = ctx3.socket(zmq.REQ)
+req_price_socket.connect('tcp://192.168.2.237:6870')
 ctx3 = Context()
 handle_socket = ctx3.socket(zmq.REQ)
 handle_socket.connect('tcp://192.168.2.237:6666')
@@ -37,20 +40,20 @@ class sub_ticker:
                 func(ticker)
 
     def __call__(self, func):
-        self._is_active = True
         self._func = func
-        self._thread = Thread(target=self._run, args=(func, ))
-        self._thread.start()
         return self
 
     def start(self):
         if self._is_active == False:
-            self.__call__(self._func)
+            self._is_active = True
+            self._thread = Thread(target=self._run, args=(self._func,))
+            self._thread.setDaemon(True)
+            self._thread.start()
 
 
     def stop(self):
         self._is_active = False
-        self._thread.join()
+        # self._thread.join()
 
     def sub(self):
         handle_socket.send_multipart([b'sub_ticker', self._prodcode.encode()])
@@ -63,41 +66,45 @@ class sub_ticker:
         print(handle_socket.recv_string())
 
 
-# class sub_price:
-#     def __init__(self,prodcode):
-#         self._prodcode =prodcode
-#         self._is_active = False
-#
-#     def _run(self, func):
-#         while self._is_active:
-#             price = price_sub_socket.recv_pyobj()
-#             # if price.ProdCode.decode() == self._prodcode:
-#             func(price)
-#
-#     def __call__(self, func):
-#         self._is_active = True
-#         self._func = func
-#         self._thread = Thread(target=self._run, args=(func, ))
-#         self._thread.start()
-#         return self
-#
-#     def start(self):
-#         if self._is_active == False:
-#             self.__call__(self._func)
-#
-#     def stop(self):
-#         self._is_active = False
-#         self._thread.join()
-#
-#     def sub(self):
-#         handle_socket.send_multipart([b'sub_price', self._prodcode.encode()])
-#         self._is_sub = True
-#         print(handle_socket.recv_string())
-#
-#     def unsub(self):
-#         handle_socket.send_multipart([b'unsub_price', self._prodcode.encode()])
-#         self._is_sub = False
-#         print(handle_socket.recv_string())
+class sub_price:
+    def __init__(self,prodcode):
+        self._prodcode = prodcode
+        self._is_active = False
+
+    def _run(self, func):
+        while self._is_active:
+            price = price_sub_socket.recv_pyobj()
+            # if price.ProdCode.decode() == self._prodcode:
+            func(price)
+
+    def __call__(self, func):
+        self._func = func
+        return self
+
+    def start(self):
+        if self._is_active == False:
+            self._is_active = True
+            self._thread = Thread(target=self._run, args=(self._func,))
+            self._thread.setDaemon(True)
+            self._thread.start()
+
+    def stop(self):
+        self._is_active = False
+
+    def sub(self):
+        handle_socket.send_multipart([b'sub_price', self._prodcode.encode()])
+        self._is_sub = True
+        print(handle_socket.recv_string())
+
+    def unsub(self):
+        handle_socket.send_multipart([b'unsub_price', self._prodcode.encode()])
+        self._is_sub = False
+        print(handle_socket.recv_string())
+
+    def get_price(self):
+        req_price_socket.send_string(self._prodcode)
+        price = req_price_socket.recv_pyobj()
+        return price
 
 def login(msg=''):
     handle_socket.send_multipart([b'login', msg.encode()])

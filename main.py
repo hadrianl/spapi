@@ -10,7 +10,7 @@ from spAPI import *
 import time
 from datetime import datetime
 initialize()
-set_login_info(**config3)
+set_login_info(**config2)
 @on_login_reply  # 登录成功时候调用
 def reply(user_id, ret_code, ret_msg):
     if ret_code == 0:
@@ -22,12 +22,12 @@ def reply(user_id, ret_code, ret_msg):
 def print_ticker(ticker):
     print(f'{datetime.fromtimestamp(ticker.TickerTime)}-Price:{ticker.Price}-Qty:{ticker.Qty}')
 
-@on_api_price_update  # 有订阅中的更新行情会调用
-def printprice(price):
-    text = f"""Time:{price.Timestamp}
-Bid:{price.Bid}   Ask:{price.Ask}
-BidQty:{price.BidQty}   AskQty:{price.AskQty}"""
-    print(text)
+# @on_api_price_update  # 有订阅中的更新行情会调用
+# def printprice(price):
+#     text = f"""Time:{price.Timestamp}
+# Bid:{price.Bid}   Ask:{price.Ask}
+# BidQty:{price.BidQty}   AskQty:{price.AskQty}"""
+#     print(text)
 
 @on_pswchange_reply  # 修改密码调用
 def pswchange_reply(ret_code, ret_msg):

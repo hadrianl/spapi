@@ -12,6 +12,7 @@ import zmq
 from zmq import Context
 import pymysql as pm
 import time
+from threading import Thread
 import configparser
 conf = configparser.ConfigParser()
 conf.read('conf.ini')
@@ -25,11 +26,14 @@ dbconfig = {'host': conf.get('MYSQL', 'host'),
 ctx1 = Context()
 ctx2 = Context()
 ctx3 = Context()
+ctx4 = Context()
 ticker_socket = ctx1.socket(zmq.PUB)
 price_socket = ctx2.socket(zmq.PUB)
-rep_socket = ctx3.socket(zmq.REP)
+rep_price_socket = ctx3.socket(zmq.REP)
+rep_socket = ctx4.socket(zmq.REP)
 ticker_socket.bind(f'tcp://*: {conf.getint("SOCKET_PORT", "ticker_pub")}')
 price_socket.bind(f'tcp://*: {conf.getint("SOCKET_PORT", "price_pub")}')
+rep_price_socket.bind(f'tcp://*: {conf.getint("SOCKET_PORT", "rep_price_pub")}')
 rep_socket.bind(f'tcp://*: {conf.getint("SOCKET_PORT", "handle_rep")}')
 conn = pm.connect(**dbconfig)
 cursor = conn.cursor()
@@ -54,11 +58,11 @@ def reply(user_id, ret_code, ret_msg):
 
 @on_ticker_update
 def ticker_update(ticker):
+    ticker_socket.send_pyobj(ticker)
     sql = f'insert into futures_tick(prodcode, price, tickertime, qty, dealsrc, decinprice) \
 values ("{ticker.ProdCode.decode()}", {ticker.Price}, "{datetime.fromtimestamp(ticker.TickerTime)}", {ticker.Qty}, {ticker.DealSrc}, "{ticker.DecInPrice.decode()}")'
     cursor.execute(sql)
     conn.commit()
-    ticker_socket.send_pyobj(ticker)
 
 @on_api_price_update
 def price_update(price):
@@ -74,8 +78,15 @@ login()
 time.sleep(1)
 
 
+def get_price():
+    while True:
+        prodcode = rep_price_socket.recv_string()
+        price = get_price_by_code(prodcode)
+        rep_price_socket.send_pyobj(price)
 if __name__ == '__main__':
     is_login = True
+    get_price_thread = Thread(target=get_price)
+    get_price_thread.start()
     while True:
         if is_login:
             while True:
@@ -101,7 +112,7 @@ if __name__ == '__main__':
                     is_login = False
                     rep_socket.send_string(f'{sp_config["user_id"]}已登出---{prodcode}')
                     break
-                elif handle =='login':
+                elif handle == 'login':
                     rep_socket.send_string('已经登录中，请勿重复登陆')
                 else:
                     rep_socket.send_string('未知指令')
