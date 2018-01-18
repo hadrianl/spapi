@@ -41,7 +41,7 @@ conn = pm.connect(**dbconfig)
 cursor = conn.cursor()
 
 from datetime import datetime
-spid = 'SP_ID1'
+spid = 'SP_ID2'
 initialize()
 sp_config = {'host': conf.get(spid, 'host'),
              'port': conf.getint(spid, 'port'),
@@ -95,7 +95,7 @@ if __name__ == '__main__':
                 handle, arg = rep_socket.recv_multipart()
                 handle = handle.decode()
                 arg = arg.decode()
-                server_logger.info(handle, arg)
+                server_logger.info(f'{handle}-{arg}')
                 if handle == 'sub_ticker':
                     subscribe_ticker(arg, 1)
                     rep_socket.send_string(f'{arg}-Ticker订阅成功')
