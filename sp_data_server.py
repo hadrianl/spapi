@@ -7,15 +7,17 @@
 
 
 from spAPI import *
-from util import *
 import zmq
 from zmq import Context
 import pymysql as pm
 import time
 from threading import Thread
 import configparser
+import logging.config
 conf = configparser.ConfigParser()
-conf.read('conf.ini')
+conf.read(r'conf\conf.ini')
+logging.config.fileConfig(r'conf\sp_log.conf')
+server_logger=logging.getLogger('root.sp_server')
 dbconfig = {'host': conf.get('MYSQL', 'host'),
             'port': conf.getint('MYSQL', 'port'),
             'user': conf.get('MYSQL', 'user'),
@@ -39,7 +41,7 @@ conn = pm.connect(**dbconfig)
 cursor = conn.cursor()
 
 from datetime import datetime
-spid = 'SP_ID3'
+spid = 'SP_ID1'
 initialize()
 sp_config = {'host': conf.get(spid, 'host'),
              'port': conf.getint(spid, 'port'),
@@ -52,9 +54,9 @@ set_login_info(**sp_config)
 @on_login_reply  # 登录成功时候调用
 def reply(user_id, ret_code, ret_msg):
     if ret_code == 0:
-        print(f'@{user_id.decode()}登录成功')
+        server_logger.info(f'@{user_id.decode()}登录成功')
     else:
-        print(f'@{user_id.decode()}登录失败--errcode:{ret_code}--errmsg:{ret_msg.decode()}')
+        server_logger.error(f'@{user_id.decode()}登录失败--errcode:{ret_code}--errmsg:{ret_msg.decode()}')
 
 @on_ticker_update
 def ticker_update(ticker):
@@ -90,27 +92,27 @@ if __name__ == '__main__':
     while True:
         if is_login:
             while True:
-                handle, prodcode = rep_socket.recv_multipart()
+                handle, arg = rep_socket.recv_multipart()
                 handle = handle.decode()
-                prodcode = prodcode.decode()
-                print(handle, prodcode)
+                arg = arg.decode()
+                server_logger.info(handle, arg)
                 if handle == 'sub_ticker':
-                    subscribe_ticker(prodcode, 1)
-                    rep_socket.send_string(f'{prodcode}-Ticker订阅成功')
+                    subscribe_ticker(arg, 1)
+                    rep_socket.send_string(f'{arg}-Ticker订阅成功')
                 elif handle == 'sub_price':
-                    subscribe_price(prodcode, 1)
-                    rep_socket.send_string(f'{prodcode}-Price订阅成功')
+                    subscribe_price(arg, 1)
+                    rep_socket.send_string(f'{arg}-Price订阅成功')
                 elif handle == 'unsub_ticker':
-                    subscribe_ticker(prodcode, 0)
-                    rep_socket.send_string(f'{prodcode}-Ticker取消订阅成功')
+                    subscribe_ticker(arg, 0)
+                    rep_socket.send_string(f'{arg}-Ticker取消订阅成功')
                 elif handle == 'unsub_price':
-                    subscribe_price(prodcode, 0)
-                    rep_socket.send_string(f'{prodcode}-Price取消订阅成功')
+                    subscribe_price(arg, 0)
+                    rep_socket.send_string(f'{arg}-Price取消订阅成功')
                 elif handle == 'logout':
                     logout()
                     unintialize()
                     is_login = False
-                    rep_socket.send_string(f'{sp_config["user_id"]}已登出---{prodcode}')
+                    rep_socket.send_string(f'{sp_config["user_id"]}已登出---{arg}')
                     break
                 elif handle == 'login':
                     rep_socket.send_string('已经登录中，请勿重复登陆')
@@ -118,14 +120,14 @@ if __name__ == '__main__':
                     rep_socket.send_string('未知指令')
 
         else:
-            handle, prodcode = rep_socket.recv_multipart()
+            handle, arg = rep_socket.recv_multipart()
             handle = handle.decode()
-            prodcode = prodcode.decode()
+            arg = arg.decode()
             if handle == 'login':
                 is_login = True
                 initialize()
-                if prodcode in ['SP_ID1', 'SP_ID2', 'SP_ID3']:
-                    spid = prodcode
+                if arg in ['SP_ID1', 'SP_ID2', 'SP_ID3']:
+                    spid = arg
                     sp_config = {'host': conf.get(spid, 'host'),
                                  'port': conf.getint(spid, 'port'),
                                  'License': conf.get(spid, 'License'),
@@ -135,6 +137,6 @@ if __name__ == '__main__':
                     set_login_info(**sp_config)
                 time.sleep(1)
                 login()
-                rep_socket.send_string(f'{sp_config["user_id"]}已登入---{prodcode}')
+                rep_socket.send_string(f'{sp_config["user_id"]}已登入---{arg}')
             else:
                 time.sleep(1)
