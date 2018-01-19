@@ -7,20 +7,10 @@
 
 import zmq
 from zmq import Context
-from datetime import datetime
 from threading import Thread
-server_IP ='192.168.2.226'
+
+server_IP = '192.168.2.226'
 poller = zmq.Poller()
-# ctx1 = Context()
-# ticker_sub_socket = ctx1.socket(zmq.SUB)
-# ticker_sub_socket.connect('tcp://192.168.2.226:6868')
-# ticker_sub_socket.setsockopt_unicode(zmq.SUBSCRIBE, '')
-# poller.register(ticker_sub_socket, zmq.POLLIN)
-# ctx2 = Context()
-# price_sub_socket = ctx2.socket(zmq.SUB)
-# price_sub_socket.connect('tcp://192.168.2.226:6869')
-# price_sub_socket.setsockopt_unicode(zmq.SUBSCRIBE, '')
-# poller.register(price_sub_socket, zmq.POLLIN)
 req_price_ctx = Context()
 req_price_socket = req_price_ctx.socket(zmq.REQ)
 req_price_socket.connect(f'tcp://{server_IP}:6870')
@@ -28,7 +18,8 @@ handle_ctx = Context()
 handle_socket = handle_ctx.socket(zmq.REQ)
 handle_socket.connect(f'tcp://{server_IP}:6666')
 
-class sub_ticker:
+
+class SubTicker:
     def __init__(self, prodcode, addr=f'tcp://{server_IP}:6868'):
         self._sub_socket = Context().socket(zmq.SUB)
         self._sub_socket.set_string(zmq.SUBSCRIBE, '')
@@ -36,6 +27,7 @@ class sub_ticker:
         self._prodcode = prodcode
         self._is_active = False
         self._is_sub = False
+        self._thread = Thread()
 
     def _run(self, func):
         self._sub_socket.connect(self._addr)
@@ -49,7 +41,7 @@ class sub_ticker:
         return self
 
     def start(self):
-        if self._is_active == False:
+        if not self._is_active:
             self._is_active = True
             self._thread = Thread(target=self._run, args=(self._func,))
             self._thread.setDaemon(True)
@@ -70,14 +62,15 @@ class sub_ticker:
         print(handle_socket.recv_string())
 
 
-class sub_price:
-    def __init__(self,prodcode, addr=f'tcp://{server_IP}:6869'):
+class SubPrice:
+    def __init__(self, prodcode, addr=f'tcp://{server_IP}:6869'):
         self._sub_socket = Context().socket(zmq.SUB)
         self._sub_socket.set_string(zmq.SUBSCRIBE, '')
         self._addr = addr
         self._prodcode = prodcode
         self._is_active = False
         self._is_sub = False
+        self._thread = Thread()
 
     def _run(self, func):
         self._sub_socket.connect(self._addr)
@@ -90,7 +83,7 @@ class sub_price:
         return self
 
     def start(self):
-        if self._is_active == False:
+        if not self._is_active:
             self._is_active = True
             self._thread = Thread(target=self._run, args=(self._func,))
             self._thread.setDaemon(True)
@@ -115,15 +108,15 @@ class sub_price:
         price = req_price_socket.recv_pyobj()
         return price
 
+
 def login(msg=''):
     handle_socket.send_multipart([b'login', msg.encode()])
     print(handle_socket.recv_string())
 
+
 def logout(msg=''):
     handle_socket.send_multipart([b'logout', msg.encode()])
     print(handle_socket.recv_string())
-
-
 
 # while True:
 #     try:

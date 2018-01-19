@@ -15,7 +15,6 @@ logging.config.fileConfig(r'conf\sp_log.conf')
 api_logger = logging.getLogger('root.sp_api')
 
 
-
 def initialize():
     """
     API初始化
@@ -27,6 +26,7 @@ def initialize():
     else:
         api_logger.error(f'初始化失败,errcode:{ret}')
     return ret
+
 
 def unintialize():
     """
@@ -89,6 +89,7 @@ def set_login_info(host, port, License, app_id, user_id, password):
     spdll.SPAPI_SetLoginInfo(c_char_p_host, c_int(port), c_char_p_license, c_char_p_app_id, c_char_p_user_id, c_char_p_password)
     api_logger.info(f'设置登录信息-host:{host} port:{port} license:{License} app_id:{app_id} user_id:{user_id}')
 
+
 def login():
     """
     发出登录请求
@@ -100,6 +101,7 @@ def login():
     else:
         api_logger.error(f'{c_char_p_user_id.value.decode}登录请求发送失败,errcode:{ret}')
     return ret
+
 
 def logout():
     """
@@ -113,6 +115,7 @@ def logout():
     else:
         api_logger.error(f'{c_char_p_user_id.value.decode()}登出请求发送失败,errcode:{ret}')
     return ret
+
 
 def change_password(old_psw, new_psw):
     """
@@ -144,6 +147,7 @@ def get_login_status(host_id):
     else:
         api_logger.error(f'获取{host_id}连接状态失败,errcode:{ret}')
     return ret
+
 
 def add_order(buy_sell, prod_code, qty, price=None, condtype=0, validtype=0, stoptype=0, stoplevel=0, decinprice=0, **kwargs):
     order = SPApiOrder()
@@ -193,7 +197,6 @@ def add_order(buy_sell, prod_code, qty, price=None, condtype=0, validtype=0, sto
     return ret
 
 
-
 def add_inactive_order(buy_sell, prod_code, qty, price, is_ao=False, condtype=0, validtype=0, decinprice=0, **kwargs):
     order = SPApiOrder()
     order.AccNo = c_char_p_user_id.value
@@ -226,6 +229,7 @@ def add_inactive_order(buy_sell, prod_code, qty, price, is_ao=False, condtype=0,
         api_logger.error(f'添加无效订单失败,,errcode:{ret},err:{RET_CODE_MSG_ORDER[ret]}')
     return order
 
+
 def change_order(order, org_price, org_qty):
     ret = spdll.SPAPI_ChangeOrder(c_char_p_user_id, pointer(order), c_double(org_price), c_double(org_qty))
     if ret == 0:
@@ -248,6 +252,7 @@ def change_order_by(accOrderNo, org_price, org_qty, newPrice, newQty):
     else:
         api_logger.error(f'修改工作中的订单：#{accOrderNo}失败,errcode:{ret},err:{RET_CODE_MSG_CHANGE_ORDER[ret]}')
     return ret
+
 
 def get_order_by_orderNo(order_no):
     order = SPApiOrder()
@@ -299,7 +304,6 @@ def delete_order_by(accOrderNo, productCode, clOrderId=''):
     return ret
 
 
-
 def delete_all_orders():
     ret = spdll.SPAPI_DeleteAllOrders(c_char_p_user_id, c_char_p_user_id)
     if ret == 0:
@@ -343,7 +347,6 @@ def inactivate_all_orders():
     else:
         api_logger.error('设置全部订单为无效订单失败,errcode:{ret}')
     return ret
-
 
 
 def send_marketmaking_order(*args):
@@ -424,6 +427,7 @@ def get_all_trades_by_array():
         api_logger.error(f'获取成交信息列表失败,errcode:{ret}')
     return all_trades
 
+
 def subscribe_price(prod_code, mode):
     mode_type = {0: '取消', 1:'订阅'}
     ret = spdll.SPAPI_SubscribePrice(c_char_p_user_id, c_char_p(prod_code.encode()), c_int(mode))
@@ -489,6 +493,7 @@ def get_instrument_by_code(inst_code):
     else:
         api_logger.error(f'获取~{inst_code}~产品系列信息失败,errcode:{ret}')
     return inst_by_code
+
 
 def get_product_count():
     ret = spdll.SPAPI_GetProductCount()
@@ -558,7 +563,7 @@ def get_all_accbal_by_array():
 
 def get_accbal_by_currency(ccy):
     accbal_by_currency = SPApiAccBal()
-    ret = spdll.SPAPI_GetAllAccBal(c_char_p_user_id,c_char_p(ccy), byref(accbal_by_currency))
+    ret = spdll.SPAPI_GetAllAccBal(c_char_p_user_id, c_char_p(ccy), byref(accbal_by_currency))
     if ret == 0:
         api_logger.info(f'获取{ccy}现金结余信息成功')
     else:
@@ -597,6 +602,7 @@ def subscribe_quote_request(prod_code, mode):
         api_logger.error(f'{mode_type[mode]}{prod_code}报价行情失败,errcode:{ret}')
     return ret
 
+
 def subscribe_all_quote_request(mode):
     """
     订阅/取消所有合约的要求报价行情
@@ -604,7 +610,7 @@ def subscribe_all_quote_request(mode):
     :return: 0,成功
     """
     mode_type = {0: '取消', 1: '订阅'}
-    ret = spdll.SPAPI_SubscribeQuoteRequest (c_char_p_user_id, c_int(mode))
+    ret = spdll.SPAPI_SubscribeQuoteRequest(c_char_p_user_id, c_int(mode))
     if ret == 0:
         api_logger.info(f'{mode_type[mode]}所有报价行情成功')
     else:
@@ -1069,69 +1075,81 @@ import sys
 def _on_login_reply_init(self, func):
     register_base.__init__(self, func, spdll.SPAPI_RegisterLoginReply, c_char_p, c_long, c_char_p)
 
+
 def _on_pswchange_reply_init(self, func):
     register_base.__init__(self, func, spdll.SPAPI_RegisterPswChangeReply, c_long, c_char_p)
+
 
 def _on_order_request_failed_init(self, func):
     register_base.__init__(self, func, spdll.SPAPI_RegisterOrderRequestFailed, c_char, SPApiOrder, c_long, c_char_p)
 
+
 def _on_order_before_send_report_init(self, func):
     register_base.__init__(self, func, spdll.SPAPI_RegisterOrderBeforeSendReport, SPApiOrder)
+
 
 def _on_quote_request_received_report_init(self, func):
     register_base.__init__(self, func, spdll.SPAPI_RegisterQuoteRequestReceivedReport, c_char_p, c_char_p, c_long)
 
+
 def _on_trade_report_init(self, func):
     register_base.__init__(self, func, spdll.SPAPI_RegisterTradeReport, c_long, SPApiTrade)
+
 
 def _on_load_trade_ready_push_init(self, func):
     register_base.__init__(self, func, spdll.SPAPI_RegisterLoadTradeReadyPush, c_long, SPApiTrade)
 
+
 def _on_order_report_init(self, func):
     register_base.__init__(self, func, spdll.SPAPI_RegisterOrderReport, c_long, SPApiOrder)
+
 
 def _on_business_date_reply_init(self, func):
     register_base.__init__(self, func, spdll.SPAPI_RegisterBusinessDateReply, c_long)
 
+
 def _on_ticker_update_init(self, func):
     register_base.__init__(self, func, spdll.SPAPI_RegisterTickerUpdate, SPApiTicker)
+
 
 def _on_api_price_update_init(self, func):
     register_base.__init__(self, func, spdll.SPAPI_RegisterApiPriceUpdate, SPApiPrice)
 
+
 def _on_account_login_reply_init(self, func):
     register_base.__init__(self, func, spdll.SPAPI_RegisterAccountLoginReply, c_char_p, c_long, c_char_p)
+
 
 def _on_account_logout_reply_init(self, func):
     register_base.__init__(self, func, spdll.SPAPI_RegisterAccountLogoutReply, c_char_p, c_long, c_char_p)
 
+
 def _on_account_info_push_init(self, func):
     register_base.__init__(self, func, spdll.SPAPI_RegisterAccountInfoPush, SPApiAccInfo)
+
 
 def _on_account_position_push_init(self, func):
     register_base.__init__(self, func, spdll.SPAPI_RegisterAccountPositionPush, SPApiPos)
 
+
 def _on_updated_account_position_push_init(self, func):
     register_base.__init__(self, func, spdll.SPAPI_RegisterUpdatedAccountPositionPush, SPApiPos)
 
+
 def _on_updated_account_balance_push_init(self, func):
     register_base.__init__(self, func, spdll.SPAPI_RegisterUpdatedAccountBalancePush, SPApiAccBal)
+
 
 def _on_product_list_by_code_reply_init(self, func):
     register_base.__init__(self, func, spdll.SPAPI_RegisterProductListByCodeReply, c_long, c_char_p, c_bool, c_char_p)
 
 
-
-
-
-
 def _on_instrument_list_reply_init(self, func):
     register_base.__init__(self, func, spdll.SPAPI_RegisterInstrumentListReply, c_long, c_bool, c_char_p)
 
+
 def _on_connecting_reply_init(self, func):
     register_base.__init__(self, func, spdll.SPAPI_RegisterConnectingReply, c_long, c_long)
-
-
 
 
 for k, v in callback_register_cfun_ctype.items():

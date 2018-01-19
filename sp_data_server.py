@@ -14,10 +14,11 @@ import time
 from threading import Thread
 import configparser
 import logging.config
+from datetime import datetime
 conf = configparser.ConfigParser()
 conf.read(r'conf\conf.ini')
 logging.config.fileConfig(r'conf\sp_log.conf')
-server_logger=logging.getLogger('root.sp_server')
+server_logger = logging.getLogger('root.sp_server')
 dbconfig = {'host': conf.get('MYSQL', 'host'),
             'port': conf.getint('MYSQL', 'port'),
             'user': conf.get('MYSQL', 'user'),
@@ -40,7 +41,7 @@ rep_socket.bind(f'tcp://*: {conf.getint("SOCKET_PORT", "handle_rep")}')
 conn = pm.connect(**dbconfig)
 cursor = conn.cursor()
 
-from datetime import datetime
+
 spid = 'SP_ID2'
 initialize()
 sp_config = {'host': conf.get(spid, 'host'),
@@ -51,6 +52,7 @@ sp_config = {'host': conf.get(spid, 'host'),
              'password': conf.get(spid, 'password')}
 set_login_info(**sp_config)
 
+
 @on_login_reply  # 登录成功时候调用
 def reply(user_id, ret_code, ret_msg):
     if ret_code == 0:
@@ -58,25 +60,23 @@ def reply(user_id, ret_code, ret_msg):
     else:
         server_logger.error(f'@{user_id.decode()}登录失败--errcode:{ret_code}--errmsg:{ret_msg.decode()}')
 
+
 @on_ticker_update
 def ticker_update(ticker):
     ticker_socket.send_pyobj(ticker)
     sql = f'insert into futures_tick(prodcode, price, tickertime, qty, dealsrc, decinprice) \
-values ("{ticker.ProdCode.decode()}", {ticker.Price}, "{datetime.fromtimestamp(ticker.TickerTime)}", {ticker.Qty}, {ticker.DealSrc}, "{ticker.DecInPrice.decode()}")'
+values ("{ticker.ProdCode.decode()}", {ticker.Price}, "{datetime.fromtimestamp(ticker.TickerTime)}", \
+{ticker.Qty}, {ticker.DealSrc}, "{ticker.DecInPrice.decode()}")'
     cursor.execute(sql)
     conn.commit()
+
 
 @on_api_price_update
 def price_update(price):
     price_socket.send_pyobj(price)
 
-# @on_quote_request_received_report
-# def quote_request_received(prod_code, buy_sell, qty):
-#     d = {'prod_code': prod_code, 'buy_sell': buy_sell, 'qty': qty}
-#     print(d)
-#     socket.send_pyobj(d)
-login()
 
+login()
 time.sleep(1)
 
 
@@ -85,6 +85,8 @@ def get_price():
         prodcode = rep_price_socket.recv_string()
         price = get_price_by_code(prodcode)
         rep_price_socket.send_pyobj(price)
+
+
 if __name__ == '__main__':
     is_login = True
     get_price_thread = Thread(target=get_price)
@@ -98,26 +100,35 @@ if __name__ == '__main__':
                 server_logger.info(f'{handle}-{arg}')
                 if handle == 'sub_ticker':
                     subscribe_ticker(arg, 1)
-                    rep_socket.send_string(f'{arg}-Ticker订阅成功')
+                    rep_text = f'{arg}-Ticker订阅成功'
+                    rep_socket.send_string(rep_text)
                 elif handle == 'sub_price':
                     subscribe_price(arg, 1)
-                    rep_socket.send_string(f'{arg}-Price订阅成功')
+                    rep_text = f'{arg}-Price订阅成功'
+                    rep_socket.send_string(rep_text)
                 elif handle == 'unsub_ticker':
                     subscribe_ticker(arg, 0)
-                    rep_socket.send_string(f'{arg}-Ticker取消订阅成功')
+                    rep_text = f'{arg}-Ticker取消订阅成功'
+                    rep_socket.send_string(rep_text)
                 elif handle == 'unsub_price':
                     subscribe_price(arg, 0)
-                    rep_socket.send_string(f'{arg}-Price取消订阅成功')
+                    rep_text = f'{arg}-Price取消订阅成功'
+                    rep_socket.send_string(rep_text)
                 elif handle == 'logout':
                     logout()
                     unintialize()
                     is_login = False
-                    rep_socket.send_string(f'{sp_config["user_id"]}已登出---{arg}')
+                    rep_text = f'{sp_config["user_id"]}已登出---{arg}'
+                    rep_socket.send_string(rep_text)
                     break
                 elif handle == 'login':
+                    rep_text = f'已登录，重复登陆指令未处理'
                     rep_socket.send_string('已经登录中，请勿重复登陆')
                 else:
+                    rep_text = f'未知指令--{handle}'
                     rep_socket.send_string('未知指令')
+
+                server_logger.info(rep_text)
 
         else:
             handle, arg = rep_socket.recv_multipart()
