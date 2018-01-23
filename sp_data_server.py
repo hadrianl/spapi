@@ -68,11 +68,15 @@ def reply(user_id, ret_code, ret_msg):
 def ticker_update(ticker):
     ticker_socket.send_pyobj(ticker)
     if ticker.ProdCode.decode() in to_sql:
-        sql = f'insert into futures_tick(prodcode, price, tickertime, qty, dealsrc, decinprice) \
-    values ("{ticker.ProdCode.decode()}", {ticker.Price}, "{datetime.fromtimestamp(ticker.TickerTime)}", \
-    {ticker.Qty}, {ticker.DealSrc}, "{ticker.DecInPrice.decode()}")'
-        cursor.execute(sql)
-        conn.commit()
+        try:
+            sql = f'insert into futures_tick(prodcode, price, tickertime, qty, dealsrc, decinprice) \
+        values ("{ticker.ProdCode.decode()}", {ticker.Price}, "{datetime.fromtimestamp(ticker.TickerTime)}", \
+        {ticker.Qty}, {ticker.DealSrc}, "{ticker.DecInPrice.decode()}")'
+            cursor.execute(sql)
+            conn.commit()
+        except pm.Error as e:
+            server_logger.info(f'sqlerror:{e}')
+            conn.ping()
 
 
 @on_api_price_update
