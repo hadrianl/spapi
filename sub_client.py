@@ -9,7 +9,7 @@ import zmq
 from zmq import Context
 from threading import Thread
 
-server_IP = '192.168.2.226'
+server_IP = '192.168.2.237'
 poller = zmq.Poller()
 req_price_ctx = Context()
 req_price_socket = req_price_ctx.socket(zmq.REQ)
@@ -109,14 +109,74 @@ class SubPrice:
         return price
 
 
-def login(msg=''):
-    handle_socket.send_multipart([b'login', msg.encode()])
+def login(id=''):
+    handle_socket.send_multipart([b'login', id.encode()])
     print(handle_socket.recv_string())
 
 
 def logout(msg=''):
     handle_socket.send_multipart([b'logout', msg.encode()])
     print(handle_socket.recv_string())
+
+
+def help():
+    """
+    帮助文档
+    :return:
+    """
+    handle_socket.send_multipart([b'help', ''])
+    print(handle_socket.recv_string())
+
+
+def ticker_into_db(prodcode):
+    """
+    将prodcode插入到数据库
+    :param prodcode: 产品代码
+    :return:
+    """
+    handle_socket.recv_multipart([ b'into_db', prodcode.encode()])
+    print(handle_socket.recv_string())
+
+
+def ticker_outof_db(prodcode):
+    """
+    讲prodcode停止插入数据库
+    :param prodcode: 产品代码
+    :return:
+    """
+    handle_socket.recv_multipart([b'outof_db', prodcode.encode()])
+    print(handle_socket.recv_string())
+
+
+def to_sql_list():
+    """
+    获取插入到数据库的代码列表
+    :return:
+    """
+    handle_socket.recv_multipart([b'to_sql_list', b''])
+    l = handle_socket.recv_string().split(',')
+    return l
+
+
+def sub_ticker_list():
+    """
+    获取正在订阅ticker的代码列表
+    :return:
+    """
+    handle_socket.recv_multipart([b'sub_ticker_list', b''])
+    l = handle_socket.recv_string().split(',')
+    return l
+
+
+def sub_price_list():
+    """
+    获取正在订阅price的代码列表
+    :return:
+    """
+    handle_socket.recv_multipart([b'sub_price_list', b''])
+    l = handle_socket.recv_string().split(',')
+    return l
+
 
 # while True:
 #     try:

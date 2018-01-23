@@ -42,9 +42,9 @@ rep_price_socket.bind(f'tcp://*: {conf.getint("SOCKET_PORT", "rep_price_pub")}')
 rep_socket.bind(f'tcp://*: {conf.getint("SOCKET_PORT", "handle_rep")}')
 conn = pm.connect(**dbconfig)
 cursor = conn.cursor()
-to_sql = set()
-sub_ticker = set()
-sub_price = set()
+to_sql_list = set()
+sub_ticker_list = set()
+sub_price_list = set()
 spid = 'SP_ID2'
 initialize()
 sp_config = {'host': loginfo.get(spid, 'host'),
@@ -67,7 +67,7 @@ def reply(user_id, ret_code, ret_msg):
 @on_ticker_update
 def ticker_update(ticker):
     ticker_socket.send_pyobj(ticker)
-    if ticker.ProdCode.decode() in to_sql:
+    if ticker.ProdCode.decode() in to_sql_list:
         try:
             sql = f'insert into futures_tick(prodcode, price, tickertime, qty, dealsrc, decinprice) \
         values ("{ticker.ProdCode.decode()}", {ticker.Price}, "{datetime.fromtimestamp(ticker.TickerTime)}", \
@@ -109,53 +109,56 @@ if __name__ == '__main__':
 
                 if handle == 'sub_ticker':
                     if subscribe_ticker(arg, 1) == 0:
-                        sub_ticker.add(arg)
+                        sub_ticker_list.add(arg)
                         rep_text = f'{arg}-Ticker订阅成功'
                     else:
                         rep_text = f'{arg}-Ticker订阅失败'
                     rep_socket.send_string(rep_text)
                 elif handle == 'sub_price':
                     if subscribe_price(arg, 1) == 0:
-                        sub_price.add(arg)
+                        sub_price_list.add(arg)
                         rep_text = f'{arg}-Price订阅成功'
                     else:
                         rep_text = f'{arg}-Price订阅失败'
                     rep_socket.send_string(rep_text)
                 elif handle == 'unsub_ticker':
                     if subscribe_ticker(arg, 0) == 0:
-                        sub_ticker.remove(arg)
+                        sub_ticker_list.remove(arg)
                         rep_text = f'{arg}-Ticker取消订阅成功'
                     else:
                         rep_text = f'{arg}-Ticker取消订阅失败'
                     rep_socket.send_string(rep_text)
                 elif handle == 'unsub_price':
                     if subscribe_price(arg, 0) == 0:
-                        sub_price.remove(arg)
+                        sub_price_list.remove(arg)
                         rep_text = f'{arg}-Price取消订阅成功'
                     else:
                         rep_text = f'{arg}-Price取消订阅失败'
                     rep_socket.send_string(rep_text)
                 elif handle == 'into_db':
-                    if arg in sub_ticker:
-                        to_sql.add(arg)
+                    if arg in sub_ticker_list:
+                        to_sql_list.add(arg)
                         rep_text = f'{arg}-启动插入DB'
                     else:
                         rep_text = f'{arg}-未订阅，无法插入DB'
                     rep_socket.send_string(rep_text)
                 elif handle == 'outof_db':
                     try:
-                        to_sql.remove(arg)
+                        to_sql_list.remove(arg)
                         rep_text = f'{arg}-取消插入DB'
                         rep_socket.send_string(rep_text)
                     except KeyError as e:
                         rep_text = f'{arg}-不存在插入DB队列中'
                         rep_socket.send_string(rep_text)
-                elif handle in ['to_sql', 'sub_ticker', 'sub_price']:
-                    rep_text = f'{handle}队列：{",".join(getattr(sys.modules[__name__], handle))}'
+                elif handle in ['to_sql_list', 'sub_ticker_list', 'sub_price_list']:
+                    rep_text = f'{",".join(getattr(sys.modules[__name__], handle, set()))}'
                     rep_socket.send_string(rep_text)
                 elif handle == 'logout':
                     logout()
                     unintialize()
+                    to_sql_list.clear()
+                    sub_ticker_list.clear()
+                    sub_price_list.clear()
                     is_login = False
                     rep_text = f'{sp_config["user_id"]}已登出---{arg}'
                     rep_socket.send_string(rep_text)
@@ -164,8 +167,19 @@ if __name__ == '__main__':
                     rep_text = f'已登录，重复登陆指令未处理'
                     rep_socket.send_string('已经登录中，请勿重复登陆')
                 elif handle == 'help':
-                    rep_text = f"""CommandList:sub_ticker,sub_price,unsub_ticker,unsub_price,into_db,outof_db,to_sql,sub_ticker,sub_price,logout,login"""
-                    rep_socket.send_string('已经登录中，请勿重复登陆')
+                    rep_text = f"""CommandList:
+                    sub_ticker:订阅ticker数据
+                    sub_price:订阅price数据
+                    unsub_ticker:取消订阅ticker数据
+                    unsub_price:取消订阅price数据
+                    into_db:添加ticker数据到数据库
+                    outof_db:取消添加ticker数据到数据库
+                    to_sql_list:正在插入数据库的代码列表
+                    sub_ticker_list:正在订阅ticker的代码列表
+                    sub_price_list:正在订阅price的代码列表
+                    logout:登出
+                    login:登入"""
+                    rep_socket.send_string(rep_text)
                 else:
                     rep_text = f'未知指令--{handle}'
                     rep_socket.send_string('未知指令')
