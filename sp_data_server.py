@@ -17,6 +17,8 @@ import logging.config
 from datetime import datetime
 conf = configparser.ConfigParser()
 conf.read(r'conf\conf.ini')
+loginfo = configparser.ConfigParser()
+loginfo.read(r'conf\loginfo.ini')
 logging.config.fileConfig(r'conf\sp_log.conf')
 server_logger = logging.getLogger('root.sp_server')
 dbconfig = {'host': conf.get('MYSQL', 'host'),
@@ -44,12 +46,12 @@ cursor = conn.cursor()
 
 spid = 'SP_ID2'
 initialize()
-sp_config = {'host': conf.get(spid, 'host'),
-             'port': conf.getint(spid, 'port'),
-             'License': conf.get(spid, 'License'),
-             'app_id': conf.get(spid, 'app_id'),
-             'user_id': conf.get(spid, 'user_id'),
-             'password': conf.get(spid, 'password')}
+sp_config = {'host': loginfo.get(spid, 'host'),
+             'port': loginfo.getint(spid, 'port'),
+             'License': loginfo.get(spid, 'License'),
+             'app_id': loginfo.get(spid, 'app_id'),
+             'user_id': loginfo.get(spid, 'user_id'),
+             'password': loginfo.get(spid, 'password')}
 set_login_info(**sp_config)
 
 
@@ -61,14 +63,17 @@ def reply(user_id, ret_code, ret_msg):
         server_logger.error(f'@{user_id.decode()}登录失败--errcode:{ret_code}--errmsg:{ret_msg.decode()}')
 
 
+to_sql_list = set()
+    #('HSIF8', )
 @on_ticker_update
 def ticker_update(ticker):
     ticker_socket.send_pyobj(ticker)
-    sql = f'insert into futures_tick(prodcode, price, tickertime, qty, dealsrc, decinprice) \
-values ("{ticker.ProdCode.decode()}", {ticker.Price}, "{datetime.fromtimestamp(ticker.TickerTime)}", \
-{ticker.Qty}, {ticker.DealSrc}, "{ticker.DecInPrice.decode()}")'
-    cursor.execute(sql)
-    conn.commit()
+    if ticker.ProdCode.decode() in to_sql_list:
+        sql = f'insert into futures_tick(prodcode, price, tickertime, qty, dealsrc, decinprice) \
+    values ("{ticker.ProdCode.decode()}", {ticker.Price}, "{datetime.fromtimestamp(ticker.TickerTime)}", \
+    {ticker.Qty}, {ticker.DealSrc}, "{ticker.DecInPrice.decode()}")'
+        cursor.execute(sql)
+        conn.commit()
 
 
 @on_api_price_update
@@ -98,6 +103,8 @@ if __name__ == '__main__':
                 handle = handle.decode()
                 arg = arg.decode()
                 server_logger.info(f'{handle}-{arg}')
+
+                server_logger.info(rep_text)
                 if handle == 'sub_ticker':
                     subscribe_ticker(arg, 1)
                     rep_text = f'{arg}-Ticker订阅成功'
@@ -114,6 +121,21 @@ if __name__ == '__main__':
                     subscribe_price(arg, 0)
                     rep_text = f'{arg}-Price取消订阅成功'
                     rep_socket.send_string(rep_text)
+                elif handle == 'into_db':
+                    to_sql_list.add(arg)
+                    rep_text = f'{arg}-启动插入DB'
+                    rep_socket.send_string(rep_text)
+                elif handle == 'outof_db':
+                    try:
+                        to_sql_list.add(arg)
+                        rep_text = f'{arg}-取消插入DB'
+                        rep_socket.send_string(rep_text)
+                    except KeyError as e:
+                        rep_text = f'{arg}-不存在插入DB队列中'
+                        rep_socket.send_string(rep_text)
+                elif handle == 'to_sql_list':
+                    rep_text = f'ticker_to_DB队列：{",".join(to_sql_list)}'
+                    rep_socket.send_string(rep_text)
                 elif handle == 'logout':
                     logout()
                     unintialize()
@@ -127,8 +149,6 @@ if __name__ == '__main__':
                 else:
                     rep_text = f'未知指令--{handle}'
                     rep_socket.send_string('未知指令')
-
-                server_logger.info(rep_text)
 
         else:
             handle, arg = rep_socket.recv_multipart()
