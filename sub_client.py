@@ -134,7 +134,7 @@ def ticker_into_db(prodcode):
     :param prodcode: 产品代码
     :return:
     """
-    handle_socket.recv_multipart([ b'into_db', prodcode.encode()])
+    handle_socket.send_multipart([ b'into_db', prodcode.encode()])
     print(handle_socket.recv_string())
 
 
@@ -144,7 +144,7 @@ def ticker_outof_db(prodcode):
     :param prodcode: 产品代码
     :return:
     """
-    handle_socket.recv_multipart([b'outof_db', prodcode.encode()])
+    handle_socket.send_multipart([b'outof_db', prodcode.encode()])
     print(handle_socket.recv_string())
 
 
@@ -153,7 +153,7 @@ def to_sql_list():
     获取插入到数据库的代码列表
     :return:
     """
-    handle_socket.recv_multipart([b'to_sql_list', b''])
+    handle_socket.send_multipart([b'to_sql_list', b''])
     l = handle_socket.recv_string().split(',')
     return l
 
@@ -163,7 +163,7 @@ def sub_ticker_list():
     获取正在订阅ticker的代码列表
     :return:
     """
-    handle_socket.recv_multipart([b'sub_ticker_list', b''])
+    handle_socket.send_multipart([b'sub_ticker_list', b''])
     l = handle_socket.recv_string().split(',')
     return l
 
@@ -173,7 +173,7 @@ def sub_price_list():
     获取正在订阅price的代码列表
     :return:
     """
-    handle_socket.recv_multipart([b'sub_price_list', b''])
+    handle_socket.send_multipart([b'sub_price_list', b''])
     l = handle_socket.recv_string().split(',')
     return l
 
@@ -198,3 +198,8 @@ def sub_price_list():
 #             print(text)
 #     except Exception as e:
 #         print(e)
+
+if __name__ == '__main__':
+    on_tick = SubTicker('HSIF8')
+    on_tick.sub()
+    ticker_into_db('HSIF8')
