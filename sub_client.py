@@ -200,6 +200,6 @@ def sub_price_list():
 #         print(e)
 
 if __name__ == '__main__':
-    on_tick = SubTicker('HSIF8')
+    on_tick = SubTicker('HSIG8')
     on_tick.sub()
-    ticker_into_db('HSIF8')
+    ticker_into_db('HSIG8')
