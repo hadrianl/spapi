@@ -84,6 +84,24 @@ def price_update(price):
     price_socket.send_pyobj(price)
 
 
+@on_connecting_reply
+def connecting_reply(host_type, con_status):
+    server_logger.info(f'连接状态改变:{HOST_TYPE[host_type]}-{HOST_CON_STATUS[con_status]}')
+    if con_status >=3:
+        for i in range(3):
+            if login() == 0:
+                server_logger.info(f'账户：{loginfo.get(spid, "user_id")}-断线重连成功')
+                time.sleep(1)
+                for t in sub_ticker_list:
+                    subscribe_ticker(t, 1)
+                for p in sub_price_list:
+                    subscribe_ticker(p, 1)
+                break
+            else:
+                server_logger.error(f'账户：{loginfo.get(spid, "user_id")}-断线重连失败')
+                time.sleep(3)
+
+
 login()
 time.sleep(1)
 
