@@ -9,7 +9,7 @@ import zmq
 from zmq import Context
 from threading import Thread
 
-server_IP = '192.168.2.237'
+server_IP = '192.168.2.226'
 poller = zmq.Poller()
 req_price_ctx = Context()
 req_price_socket = req_price_ctx.socket(zmq.REQ)
@@ -124,7 +124,7 @@ def help():
     帮助文档
     :return:
     """
-    handle_socket.send_multipart([b'help', ''])
+    handle_socket.send_multipart([b'help', b''])
     print(handle_socket.recv_string())
 
 
@@ -200,6 +200,21 @@ def sub_price_list():
 #         print(e)
 
 if __name__ == '__main__':
-    on_tick = SubTicker('HSIG8')
+    import datetime as dt
+    MONTH_LETTER_MAPS = {1: 'F',
+                         2: 'G',
+                         3: 'H',
+                         4: 'J',
+                         5: 'K',
+                         6: 'M',
+                         7: 'N',
+                         8: 'Q',
+                         9: 'U',
+                         10: 'V',
+                         11: 'X',
+                         12: 'Z'
+                         }
+    symbol = 'HSI' + MONTH_LETTER_MAPS[dt.datetime.now().month] + str(dt.datetime.now().year)[-1]
+    on_tick = SubTicker(symbol)
     on_tick.sub()
-    ticker_into_db('HSIG8')
+    ticker_into_db(symbol)
