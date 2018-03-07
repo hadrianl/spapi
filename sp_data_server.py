@@ -15,6 +15,8 @@ from threading import Thread
 import configparser
 import logging.config
 from datetime import datetime
+
+
 conf = configparser.ConfigParser()
 conf.read(r'conf\conf.ini')
 loginfo = configparser.ConfigParser()
@@ -92,14 +94,35 @@ def connecting_reply(host_type, con_status):
             if login() == 0:
                 server_logger.info(f'账户：{loginfo.get(spid, "user_id")}-断线重连成功')
                 time.sleep(1)
-                for t in sub_ticker_list:
-                    subscribe_ticker(t, 1)
-                for p in sub_price_list:
-                    subscribe_ticker(p, 1)
-                break
+                try:
+                    for t in sub_ticker_list:
+                        if subscribe_ticker(t, 1) == 0:
+                            server_logger.info(f'{t}-Ticker续订成功')
+                    for p in sub_price_list:
+                        if subscribe_ticker(p, 1) == 0:
+                            server_logger.info(f'{p}-Price续订成功')
+                    break
+                except Exception as e:
+                    server_logger.info(f'账户：{loginfo.get(spid, "user_id")}-续订数据失败')
             else:
                 server_logger.error(f'账户：{loginfo.get(spid, "user_id")}-断线重连失败')
                 time.sleep(3)
+        else:
+            server_logger.info(f'账户：{loginfo.get(spid, "user_id")}-断线重连三次失败')
+            
+            import smtplib
+            from email.mime.text import MIMEText
+            me = "LogServer" + "<" + loginfo.get('EMAIL', 'sender') + ">"
+            msg = MIMEText('断线重连发生错误', _subtype='plain', _charset='utf-8')
+            msg['Subject'] = 'Server邮件'
+            msg['From'] = me
+            msg['To'] = "137150224@qq.com"
+            smtp = smtplib.SMTP()
+            smtp.connect(loginfo.get('EMAIL', 'host'), loginfo.get('EMAIL', 'port'))
+            smtp.login(loginfo.get('EMAIL', 'username'), loginfo.get('EMAIL', 'password'))
+            smtp.sendmail(me, '137150224@qq.com', msg.as_string())
+            smtp.quit()
+
 
 
 login()
