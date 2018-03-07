@@ -16,6 +16,8 @@ req_price_socket = req_price_ctx.socket(zmq.REQ)
 req_price_socket.connect(f'tcp://{server_IP}:6870')
 handle_ctx = Context()
 handle_socket = handle_ctx.socket(zmq.REQ)
+handle_socket.setsockopt(zmq.SNDTIMEO, 1000)
+handle_socket.setsockopt(zmq.RCVTIMEO, 1000)
 handle_socket.connect(f'tcp://{server_IP}:6666')
 
 
