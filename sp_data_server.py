@@ -109,7 +109,7 @@ def connecting_reply(host_type, con_status):
                 time.sleep(3)
         else:
             server_logger.info(f'账户：{loginfo.get(spid, "user_id")}-断线重连三次失败')
-            
+
             import smtplib
             from email.mime.text import MIMEText
             me = "LogServer" + "<" + loginfo.get('EMAIL', 'sender') + ">"
