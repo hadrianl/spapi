@@ -112,11 +112,21 @@ def connecting_reply(host_type, con_status):
 
             import smtplib
             from email.mime.text import MIMEText
+            from email.mime.multipart import MIMEMultipart
+            from email.mime.application import MIMEApplication
             me = "LogServer" + "<" + loginfo.get('EMAIL', 'sender') + ">"
-            msg = MIMEText('断线重连发生错误', _subtype='plain', _charset='utf-8')
+            msg = MIMEMultipart()
             msg['Subject'] = 'Server邮件'
             msg['From'] = me
             msg['To'] = "137150224@qq.com"
+
+            txt = MIMEText('断线重连失败', _subtype='plain', _charset='utf-8')
+            msg.attach(txt)
+
+            att = MIMEApplication(open('SP_LOG/sp_server.log', 'rb').read())
+            att.add_header('Content-Disposition', 'attachment', filename='sp_server.log')
+            msg.attach(att)
+
             smtp = smtplib.SMTP()
             smtp.connect(loginfo.get('EMAIL', 'host'), loginfo.get('EMAIL', 'port'))
             smtp.login(loginfo.get('EMAIL', 'username'), loginfo.get('EMAIL', 'password'))
