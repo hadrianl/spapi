@@ -218,5 +218,9 @@ if __name__ == '__main__':
                          }
     symbol = 'HSI' + MONTH_LETTER_MAPS[dt.datetime.now().month] + str(dt.datetime.now().year)[-1]
     on_tick = SubTicker(symbol)
+    on_tick2 = SubTicker('MHIH8')
+    on_price = SubPrice(symbol)
     on_tick.sub()
+    on_tick2.sub()
+    on_price.sub()
     ticker_into_db(symbol)
