@@ -142,8 +142,10 @@ time.sleep(1)
 def get_price():
     while True:
         prodcode = rep_price_socket.recv_string()
+        server_logger.info(f'请求{prodcode}数据')
         price = get_price_by_code(prodcode)
         rep_price_socket.send_pyobj(price)
+        server_logger.info(f'发送{prodcode}数据成功')
 
 
 if __name__ == '__main__':
