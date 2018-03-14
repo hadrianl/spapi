@@ -6,27 +6,6 @@
 # @License : (C) Copyright 2013-2017, 凯瑞投资
 
 
-config = {'host': 'demo.spsystem1.info',
-          'port': 8080,
-          'License': '59493B8B4C09F',
-          'app_id': 'SPDEMO',
-          'user_id': 'DEMO201706051A',
-          'password': '1234'}
-config2 = {'host': 'sppro.eif.com.hk',
-           'port': 8080,
-           'License': '7E9089A09316DFD7',
-           'app_id': 'ESS',
-           'user_id': '302266',
-           'password': 'krtz2018'}
-
-config3 = {'host': 'powerfutures.htisec.com.cn',
-           'port': 8080,
-           'License': '94C9WFZE',
-           'app_id': '684ZZ9YJ',
-           'user_id': '01-0272648-00',
-           'password': 'xz624812'}
-
-
 
 RET_CODE_MSG_UNINIT = {0: '代表成功',
                        -1:  '用户未登出',
