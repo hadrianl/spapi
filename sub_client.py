@@ -179,6 +179,15 @@ def sub_price_list():
     l = handle_socket.recv_string().split(',')
     return l
 
+def check_thread_alive():
+    """
+    查询get_price线程是否alive
+    :return:
+    """
+    handle_socket.send_multipart([b'check_thread_alive', b''])
+    l = handle_socket.recv_string()
+    print(l)
+
 
 # while True:
 #     try:
@@ -218,9 +227,5 @@ if __name__ == '__main__':
                          }
     symbol = 'HSI' + MONTH_LETTER_MAPS[dt.datetime.now().month] + str(dt.datetime.now().year)[-1]
     on_tick = SubTicker(symbol)
-    on_tick2 = SubTicker('MHIH8')
-    on_price = SubPrice(symbol)
     on_tick.sub()
-    on_tick2.sub()
-    on_price.sub()
     ticker_into_db(symbol)

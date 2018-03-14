@@ -206,6 +206,9 @@ if __name__ == '__main__':
                 elif handle in ['to_sql_list', 'sub_ticker_list', 'sub_price_list']:
                     rep_text = f'{",".join(getattr(sys.modules[__name__], handle, set()))}'
                     rep_socket.send_string(rep_text)
+                elif handle == 'check_thread_alive':
+                    rep_text = f'get_price线程运行情况:{get_price_thread.is_alive()}'
+                    rep_socket.send_string(rep_text)
                 elif handle == 'logout':
                     logout()
                     unintialize()
