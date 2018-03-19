@@ -25,42 +25,51 @@ class SubTicker:
     def __init__(self, prodcode, addr=f'tcp://{server_IP}:6868'):
         self._sub_socket = Context().socket(zmq.SUB)
         self._sub_socket.set_string(zmq.SUBSCRIBE, '')
+        self._sub_socket.setsockopt(zmq.RCVTIMEO, 5000)
         self._addr = addr
         self._prodcode = prodcode
-        self._is_active = False
-        self._is_sub = False
-        self._thread = Thread()
+        self.__is_active = False
+        self.__is_sub = False
+        self.__thread = Thread()
 
-    def _run(self, func):
-        self._sub_socket.connect(self._addr)
-        while self._is_active:
-            ticker = self._sub_socket.recv_pyobj()
-            if ticker.ProdCode.decode() == self._prodcode:
-                func(ticker)
+    def __run(self, func):
+        while self.__is_active:
+            try:
+                ticker = self._sub_socket.recv_pyobj()
+                if ticker.ProdCode.decode() == self._prodcode:
+                    func(ticker)
+            except zmq.ZMQError:
+                ...
 
     def __call__(self, func):
         self._func = func
         return self
 
     def start(self):
-        if not self._is_active:
-            self._is_active = True
-            self._thread = Thread(target=self._run, args=(self._func,))
-            self._thread.setDaemon(True)
-            self._thread.start()
+        if not self.__is_active:
+            self.__is_active = True
+            self._sub_socket.connect(self._addr)
+            self.__thread = Thread(target=self.__run, args=(self._func,))
+            self.__thread.setDaemon(True)
+            self.__thread.start()
 
     def stop(self):
-        self._is_active = False
+        self.__is_active = False
+        self.__thread.join()
         self._sub_socket.disconnect(self._addr)
+
+    def is_alive(self):
+        return self.__is_active
+
 
     def sub(self):
         handle_socket.send_multipart([b'sub_ticker', self._prodcode.encode()])
-        self._is_sub = True
+        self.__is_sub = True
         print(handle_socket.recv_string())
 
     def unsub(self):
         handle_socket.send_multipart([b'unsub_ticker', self._prodcode.encode()])
-        self._is_sub = False
+        self.__is_sub = False
         print(handle_socket.recv_string())
 
 
@@ -68,41 +77,49 @@ class SubPrice:
     def __init__(self, prodcode, addr=f'tcp://{server_IP}:6869'):
         self._sub_socket = Context().socket(zmq.SUB)
         self._sub_socket.set_string(zmq.SUBSCRIBE, '')
+        self._sub_socket.setsockopt(zmq.RCVTIMEO, 5000)
         self._addr = addr
         self._prodcode = prodcode
-        self._is_active = False
-        self._is_sub = False
-        self._thread = Thread()
+        self.__is_active = False
+        self.__is_sub = False
+        self.__thread = Thread()
 
-    def _run(self, func):
-        self._sub_socket.connect(self._addr)
-        while self._is_active:
-            price = self._sub_socket.recv_pyobj()
-            func(price)
+    def __run(self, func):
+        while self.__is_active:
+            try:
+                price = self._sub_socket.recv_pyobj()
+                func(price)
+            except zmq.ZMQError:
+                ...
 
     def __call__(self, func):
         self._func = func
         return self
 
     def start(self):
-        if not self._is_active:
-            self._is_active = True
-            self._thread = Thread(target=self._run, args=(self._func,))
-            self._thread.setDaemon(True)
-            self._thread.start()
+        if not self.__is_active:
+            self.__is_active = True
+            self._sub_socket.connect(self._addr)
+            self.__thread = Thread(target=self.__run, args=(self._func,))
+            self.__thread.setDaemon(True)
+            self.__thread.start()
 
     def stop(self):
+        self.__is_active = False
+        self.__thread.join()
         self._sub_socket.disconnect(self._addr)
-        self._is_active = False
+
+    def is_alive(self):
+        return self.__is_active
 
     def sub(self):
         handle_socket.send_multipart([b'sub_price', self._prodcode.encode()])
-        self._is_sub = True
+        self.__is_sub = True
         print(handle_socket.recv_string())
 
     def unsub(self):
         handle_socket.send_multipart([b'unsub_price', self._prodcode.encode()])
-        self._is_sub = False
+        self.__is_sub = False
         print(handle_socket.recv_string())
 
     def get_price(self):
