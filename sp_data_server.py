@@ -15,6 +15,7 @@ from threading import Thread
 import configparser
 import logging.config
 from datetime import datetime
+from queue import Queue
 
 
 conf = configparser.ConfigParser()
@@ -56,6 +57,7 @@ sp_config = {'host': loginfo.get(spid, 'host'),
              'user_id': loginfo.get(spid, 'user_id'),
              'password': loginfo.get(spid, 'password')}
 set_login_info(**sp_config)
+insert_ticker_queue = Queue()
 
 
 @on_login_reply  # 登录成功时候调用
@@ -69,20 +71,22 @@ def reply(user_id, ret_code, ret_msg):
 @on_ticker_update
 def ticker_update(ticker):
     ticker_socket.send_pyobj(ticker)
-    if ticker.ProdCode.decode() in to_sql_list:
-        insert_thread = Thread(target=insert_ticker, args=(ticker, ))
-        insert_thread.start()
+    insert_ticker_queue.put(ticker)
 
-def insert_ticker(ticker):
-    try:
-        sql = f'insert into futures_tick(prodcode, price, tickertime, qty, dealsrc, decinprice) \
-    values ("{ticker.ProdCode.decode()}", {ticker.Price}, "{datetime.fromtimestamp(ticker.TickerTime)}", \
-    {ticker.Qty}, {ticker.DealSrc}, "{ticker.DecInPrice.decode()}")'
-        cursor.execute(sql)
-        conn.commit()
-    except pm.Error as e:
-        server_logger.info(f'sqlerror:{e}')
-        conn.ping()
+
+def insert_ticker():
+    while True:
+        try:
+            ticker = insert_ticker_queue.get()
+            if ticker.ProdCode.decode() in to_sql_list:
+                sql = f'insert into futures_tick(prodcode, price, tickertime, qty, dealsrc, decinprice) \
+            values ("{ticker.ProdCode.decode()}", {ticker.Price}, "{datetime.fromtimestamp(ticker.TickerTime)}", \
+            {ticker.Qty}, {ticker.DealSrc}, "{ticker.DecInPrice.decode()}")'
+                cursor.execute(sql)
+                conn.commit()
+        except pm.Error as e:
+            server_logger.info(f'sqlerror:{e}')
+            conn.ping()
 
 @on_api_price_update
 def price_update(price):
@@ -154,7 +158,9 @@ def get_price():
 if __name__ == '__main__':
     is_login = True
     get_price_thread = Thread(target=get_price)
+    insert_ticker_thread = Thread(target=insert_ticker)
     get_price_thread.start()
+    insert_ticker_thread.start()
     while True:
         if is_login:
             while True:
