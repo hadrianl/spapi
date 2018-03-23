@@ -149,80 +149,99 @@ def get_login_status(host_id):
     return ret
 
 
-def add_order(buy_sell, prod_code, qty, price=None, condtype=0, validtype=0, stoptype=0, stoplevel=0, decinprice=0, **kwargs):
+def add_order(**kwargs):
     order = SPApiOrder()
     order.AccNo = c_char_p_user_id.value
     order.Initiator = c_char_p_user_id.value
-    order.BuySell = buy_sell.encode()
-    order.Qty = qty
-    order.ProdCode = prod_code.encode()
     order.Ref = b'@PYTHON#TRADEAPI'
-    order.GatewayCode = b''
-    order.CondType = condtype
-    order.DecInPrice = b'0'
-    order.StopType = stoptype.encode()
-    if 'ClOrderId' in kwargs: order.ClOrderId = kwargs['C1OrderId'].encode()
-    order.ValidType = validtype
-    order.DecInPrice = decinprice
-    if order.CondType == 0:
-        if price:
-            order.OrderType = 0
-            order.Price = c_double(price)
-            order.Ref2 = b'Limit Order'
-        else:
-            order.OrderType = 6
-            order.Ref2 = b'Market Order'
-    elif order.CondType == 1:
-        if order.StopType == b'L':
-            order.StopLevel = stoplevel
-            order.Price = price
-            order.ValidType = validtype  # 当天有效
-            order.Ref2 = b'Stop Limit Order'
-        elif order.StopType == b'U':
-            order.StopLevel = stoplevel
-            order.Price = price
-            order.ValidType = validtype  # 当天有效
-            order.Ref2 = b'Up Trigger Limit Order'
-        elif order.StopType == b'D':
-            order.StopLevel = stoplevel
-            order.Price = price
-            order.ValidType = validtype  # 当天有效
-            order.Ref2 = b'Down Trigger Limit Order'
+    for k, v in kwargs:
+        if hasattr(order, k):
+            _v = v.encode() if isinstance(v, str) else v
+            setattr(order, k, _v)
 
-    ret = spdll.SPAPI_AddOrder(order)
+    ret = spdll.SPAPI_AddOrder(byref(order))
     if ret == 0:
         api_logger.info(f'添加订单成功')
     else:
         api_logger.error(f'添加订单失败,errcode:{ret},err:{RET_CODE_MSG_ORDER[ret]}')
     return ret
+    # order.BuySell = buy_sell.encode()
+    # order.Qty = qty
+    # order.ProdCode = prod_code.encode()
+    #
+    # order.GatewayCode = b''
+    # order.CondType = condtype
+    # order.DecInPrice = b'0'
+    # order.StopType = stoptype.encode()
+    # if 'ClOrderId' in kwargs: order.ClOrderId = kwargs['C1OrderId'].encode()
+    # order.ValidType = validtype
+    # order.DecInPrice = decinprice
+    # order.OrderType = ordertype
+    # try:
+    #     if order.CondType == 0:  # 普通指令
+    #         if order.OrderType == 0: # 限价指令
+    #             price_map = {0: price, 2: 0x7fffffff, 6: 0}
+    #             order.Price = price_map[order.OrderType]  #设定价格
 
 
-def add_inactive_order(buy_sell, prod_code, qty, price, is_ao=False, condtype=0, validtype=0, decinprice=0, **kwargs):
+
+    # if order.CondType == 0:  # 限价指令类型,普通订单
+    #     if price:
+    #         order.OrderType = 0
+    #         order.Price = c_double(price)
+    #         order.Ref2 = b'Limit Order'
+    #     else:
+    #         order.OrderType = 6
+    #         order.Ref2 = b'Market Order'
+    # elif order.CondType == 1:
+    #     if order.StopType == b'L':
+    #         order.StopLevel = stoplevel
+    #         order.Price = price
+    #         order.ValidType = validtype  # 当天有效
+    #         order.Ref2 = b'Stop Limit Order'
+    #     elif order.StopType == b'U':
+    #         order.StopLevel = stoplevel
+    #         order.Price = price
+    #         order.ValidType = validtype  # 当天有效
+    #         order.Ref2 = b'Up Trigger Limit Order'
+    #     elif order.StopType == b'D':
+    #         order.StopLevel = stoplevel
+    #         order.Price = price
+    #         order.ValidType = validtype  # 当天有效
+    #         order.Ref2 = b'Down Trigger Limit Order'
+
+def add_inactive_order(**kwargs):
     order = SPApiOrder()
     order.AccNo = c_char_p_user_id.value
     order.Initiator = c_char_p_user_id.value
-    order.BuySell = buy_sell.encode()
-    order.Qty = qty
-    order.ProdCode = prod_code.encode()
     order.Ref = b'@PYTHON#TRADEAPI'
-    order.Ref2 = b'0'
-    order.GatewayCode = b''
-    order.CondType = condtype
-    order.DecInPrice = b'0'
-    if 'ClOrderId' in kwargs: order.ClOrderId = kwargs['C1OrderId'].encode()
-    order.ValidType = validtype
-    order.DecInPrice = decinprice
-    # if
-    if is_ao:
-        order.OrderType = 2
-        order.Price = c_long(0x7fffffff)
-        order.StopType = 0
-        order.StopLevel = 0
-    else:
-        order.OrderType = 0
-        order.Price = c_double(price)
+    for k, v in kwargs:
+        if hasattr(order, k):
+            _v = v.encode() if isinstance(v, str) else v
+            setattr(order, k, _v)
 
-    ret = spdll.SPAPI_AddOrder(order)
+    # order.BuySell = buy_sell.encode()
+    # order.Qty = qty
+    # order.ProdCode = prod_code.encode()
+    # order.Ref = b'@PYTHON#TRADEAPI'
+    # order.Ref2 = b'0'
+    # order.GatewayCode = b''
+    # order.CondType = condtype
+    # order.DecInPrice = b'0'
+    # if 'ClOrderId' in kwargs: order.ClOrderId = kwargs['C1OrderId'].encode()
+    # order.ValidType = validtype
+    # order.DecInPrice = decinprice
+    # # if
+    # if is_ao:
+    #     order.OrderType = 2
+    #     order.Price = c_long(0x7fffffff)
+    #     order.StopType = 0
+    #     order.StopLevel = 0
+    # else:
+    #     order.OrderType = 0
+    #     order.Price = c_double(price)
+    #
+    ret = spdll.SPAPI_AddOrder(byref(order))
     if ret == 0:
         api_logger.info(f'添加无效订单成功')
     else:
@@ -266,7 +285,7 @@ def get_order_by_orderNo(order_no):
 
 def get_order_count():
     ret = spdll.SPAPI_GetOrderCount(c_char_p_user_id, c_char_p_user_id)
-    if ret == 0:
+    if ret >= 0:
         api_logger.info(f'获取订单数量成功')
     else:
         api_logger.error(f'获取订单数量失败,errcode:{ret}')
@@ -349,9 +368,13 @@ def inactivate_all_orders():
     return ret
 
 
-def send_marketmaking_order(*args):
-    mmorder = SPApiMMOrder(*args)  # TODO mmorder
-    ret = spdll.SPAPI_SendMarketMakingOrder(pointer(mmorder))
+def send_marketmaking_order(**kwargs):
+    mmorder = SPApiMMOrder()
+    for k, v in kwargs:
+        if hasattr(mmorder, k):
+            _v = v.encode() if isinstance(v, str) else v
+            setattr(mmorder, k, _v)
+    ret = spdll.SPAPI_SendMarketMakingOrder(byref(mmorder))
     if ret == 0:
         api_logger.info('造市商下单成功')
     else:
