@@ -24,7 +24,7 @@ handle_socket.connect(f'tcp://{server_IP}:6666')
 class SubTicker:
     def __init__(self, prodcode, addr=f'tcp://{server_IP}:6868'):
         self._sub_socket = ctx.socket(zmq.SUB)
-        self._sub_socket.set_string(zmq.SUBSCRIBE, prodcode.encode())
+        self._sub_socket.set_string(zmq.SUBSCRIBE, prodcode)
         self._sub_socket.setsockopt(zmq.RCVTIMEO, 5000)
         self._addr = addr
         self._prodcode = prodcode
@@ -76,7 +76,7 @@ class SubTicker:
 class SubPrice:
     def __init__(self, prodcode, addr=f'tcp://{server_IP}:6869'):
         self._sub_socket = ctx.socket(zmq.SUB)
-        self._sub_socket.set_string(zmq.SUBSCRIBE, prodcode.encode())
+        self._sub_socket.set_string(zmq.SUBSCRIBE, prodcode)
         self._sub_socket.setsockopt(zmq.RCVTIMEO, 5000)
         self._addr = addr
         self._prodcode = prodcode
