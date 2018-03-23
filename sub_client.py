@@ -11,11 +11,11 @@ from threading import Thread
 
 server_IP = '192.168.2.226'
 poller = zmq.Poller()
-req_price_ctx = Context()
-req_price_socket = req_price_ctx.socket(zmq.REQ)
+ctx = Context()
+req_price_socket = ctx.socket(zmq.REQ)
 req_price_socket.connect(f'tcp://{server_IP}:6870')
-handle_ctx = Context()
-handle_socket = handle_ctx.socket(zmq.REQ)
+
+handle_socket = ctx.socket(zmq.REQ)
 handle_socket.setsockopt(zmq.SNDTIMEO, 1000)
 handle_socket.setsockopt(zmq.RCVTIMEO, 1000)
 handle_socket.connect(f'tcp://{server_IP}:6666')
@@ -23,8 +23,8 @@ handle_socket.connect(f'tcp://{server_IP}:6666')
 
 class SubTicker:
     def __init__(self, prodcode, addr=f'tcp://{server_IP}:6868'):
-        self._sub_socket = Context().socket(zmq.SUB)
-        self._sub_socket.set_string(zmq.SUBSCRIBE, '')
+        self._sub_socket = ctx.socket(zmq.SUB)
+        self._sub_socket.set_string(zmq.SUBSCRIBE, prodcode.encode())
         self._sub_socket.setsockopt(zmq.RCVTIMEO, 5000)
         self._addr = addr
         self._prodcode = prodcode
@@ -75,8 +75,8 @@ class SubTicker:
 
 class SubPrice:
     def __init__(self, prodcode, addr=f'tcp://{server_IP}:6869'):
-        self._sub_socket = Context().socket(zmq.SUB)
-        self._sub_socket.set_string(zmq.SUBSCRIBE, '')
+        self._sub_socket = ctx.socket(zmq.SUB)
+        self._sub_socket.set_string(zmq.SUBSCRIBE, prodcode.encode())
         self._sub_socket.setsockopt(zmq.RCVTIMEO, 5000)
         self._addr = addr
         self._prodcode = prodcode
