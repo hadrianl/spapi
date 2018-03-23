@@ -16,7 +16,7 @@ class SPApiOrder(Structure):
                 ('UpPrice', c_double),  # 上限价格
                 ('DownLevel', c_double),  # 下限水平
                 ('DownPrice', c_double),  # 下限价格
-                ('ExtOrderNo', c_longlong),  # 外部指示
+                ('ExtOrderNo', c_int64),  # 外部指示
                 ('IntOrderNo', c_int32),  # 用户订单编号
                 ('Qty', c_int32),  # 剩下数量
                 ('TradedQty', c_int32),  # 已成交数量
@@ -117,15 +117,15 @@ class SPApiTrade(Structure):
 
 
 class SPApiPrice(Structure):
-    _fields_ = [('Bid', c_double),  # 买入价
-                ('BidQty', c_int32),  # 买入量
-                ('BidTicket', c_int32),  # 买指令数量
-                ('Ask', c_double),  # 卖出价
-                ('AskQty', c_int32),  # 卖出量
-                ('AskTicket', c_int32),  # 卖指令数量
-                ('Last', c_double),  # 成交价
-                ('LastQty', c_int32),  # 成交数量
-                ('LastTime', c_uint32),  # 成交时间
+    _fields_ = [('Bid', c_double * 20),  # 买入价
+                ('BidQty', c_int32 * 20),  # 买入量
+                ('BidTicket', c_int32 * 20),  # 买指令数量
+                ('Ask', c_double * 20),  # 卖出价
+                ('AskQty', c_int32 * 20),  # 卖出量
+                ('AskTicket', c_int32 * 20),  # 卖指令数量
+                ('Last', c_double * 20),  # 成交价
+                ('LastQty', c_int32 * 20),  # 成交数量
+                ('LastTime', c_uint32 * 20),  # 成交时间
                 ('Equil', c_double),  # 平衡价
                 ('Open', c_double),
                 ('High', c_double),

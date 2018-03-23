@@ -9,8 +9,20 @@
 from spAPI import *
 import time
 from datetime import datetime
+import configparser
+
+loginfo = configparser.ConfigParser()
+loginfo.read(r'conf\loginfo.ini')
+spid = 'SP_ID2'
 initialize()
-set_login_info(**config2)
+sp_config = {'host': loginfo.get(spid, 'host'),
+             'port': loginfo.getint(spid, 'port'),
+             'License': loginfo.get(spid, 'License'),
+             'app_id': loginfo.get(spid, 'app_id'),
+             'user_id': loginfo.get(spid, 'user_id'),
+             'password': loginfo.get(spid, 'password')}
+
+set_login_info(**sp_config)
 @on_login_reply  # 登录成功时候调用
 def reply(user_id, ret_code, ret_msg):
     if ret_code == 0:

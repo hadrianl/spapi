@@ -466,7 +466,7 @@ def get_instrument_count():
     return ret
 
 # def get_instrument():
-#     inst_list = SPApiInstrument()  # TODO SPApiInstrument
+#     inst_list = (SPApiInstrument * get_instrument_count())()  # TODO SPApiInstrument
 #     ret = spdll.SPAPI_GetInstrument(byref(inst_list))
 #     if ret == 0:
 #         return inst_list
@@ -477,7 +477,7 @@ def get_instrument_count():
 
 def get_instrument_by_array():
     inst_list = (SPApiInstrument * get_instrument_count())()
-    ret = spdll.SPAPI_GetInstrument(byref(inst_list))
+    ret = spdll.SPAPI_GetInstrumentByArray(byref(inst_list))
     if ret == 0:
         api_logger.info('获取市场产品系列数量成功')
     else:
@@ -514,7 +514,7 @@ def get_product_count():
 
 def get_product_by_array():
     prod_list = (SPApiProduct * get_product_count())()
-    ret = spdll.SPAPI_GetProduct(byref(prod_list))
+    ret = spdll.SPAPI_GetProductByArray(byref(prod_list))
     if ret == 0 :
         api_logger.info('获取已加载的产品合约信息成功')
     else:
@@ -553,7 +553,7 @@ def get_accbal_count():
 
 def get_all_accbal_by_array():
     all_accbal = (SPApiAccBal * get_accbal_count())()
-    ret = spdll.SPAPI_GetAllAccBal(c_char_p_user_id, byref(all_accbal))
+    ret = spdll.SPAPI_GetAllAccBalByArray(c_char_p_user_id, byref(all_accbal))
     if ret == 0:
         api_logger.info('获取账户全部现金结余信息成功')
     else:
@@ -563,7 +563,7 @@ def get_all_accbal_by_array():
 
 def get_accbal_by_currency(ccy):
     accbal_by_currency = SPApiAccBal()
-    ret = spdll.SPAPI_GetAllAccBal(c_char_p_user_id, c_char_p(ccy), byref(accbal_by_currency))
+    ret = spdll.SPAPI_GetAccBalByCurrency(c_char_p_user_id, c_char_p(ccy.encode()), byref(accbal_by_currency))
     if ret == 0:
         api_logger.info(f'获取{ccy}现金结余信息成功')
     else:
@@ -631,22 +631,22 @@ def get_acc_info():
         api_logger.error(f'获取账户信息失败,errcode:{ret}')
     return acc_info
 
-# def get_dll_version():
-#     """
-#     查询 DLL 版本信息
-#     :return:
-#     """
-#     c_dll_ver_no = c_char_p()
-#     c_dll_rel_no = c_char_p()
-#     c_dll_suffix = c_char_p()
-#     ret = spdll.SPAPI_GetDllVersion(c_dll_ver_no, c_dll_rel_no, c_dll_suffix)
-#     if ret == 0:
-#         version = {'DLL的版本信息': c_dll_ver_no,
-#                    '发布版本号': c_dll_rel_no,
-#                    '更新时间': c_dll_suffix}
-#         return version
-#     else:
-#         raise Exception('查询DLL版本信息失败')
+def get_dll_version():
+    """
+    查询 DLL 版本信息
+    :return:
+    """
+    c_dll_ver_no = c_char_p()
+    c_dll_rel_no = c_char_p()
+    c_dll_suffix = c_char_p()
+    ret = spdll.SPAPI_GetDllVersion(c_dll_ver_no, c_dll_rel_no, c_dll_suffix)
+    if ret == 0:
+        version = {'DLL的版本信息': c_dll_ver_no,
+                   '发布版本号': c_dll_rel_no,
+                   '更新时间': c_dll_suffix}
+        return version
+    else:
+        raise Exception('查询DLL版本信息失败')
 
 
 def load_productinfolist_by_market(market_code):
@@ -665,7 +665,7 @@ def load_productinfolist_by_market(market_code):
 
 def load_productinfolist_by_code(inst_code):
     """
-    根据产品系列代码加载该系列下的合约信息
+    根据产品系列代码加载该系列下的合约信息,需要先加载产品代码，才可以取合约代码
     :param inst_code:产品系列代码
     :return:
     """
