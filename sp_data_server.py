@@ -31,14 +31,11 @@ dbconfig = {'host': conf.get('MYSQL', 'host'),
             'db': conf.get('MYSQL', 'db'),
             'cursorclass': pm.cursors.DictCursor
             }
-ctx1 = Context()
-ctx2 = Context()
-ctx3 = Context()
-ctx4 = Context()
-ticker_socket = ctx1.socket(zmq.PUB)
-price_socket = ctx2.socket(zmq.PUB)
-rep_price_socket = ctx3.socket(zmq.REP)
-rep_socket = ctx4.socket(zmq.REP)
+ctx = Context()
+ticker_socket = ctx.socket(zmq.PUB)
+price_socket = ctx.socket(zmq.PUB)
+rep_price_socket = ctx.socket(zmq.REP)
+rep_socket = ctx.socket(zmq.REP)
 ticker_socket.bind(f'tcp://*: {conf.getint("SOCKET_PORT", "ticker_pub")}')
 price_socket.bind(f'tcp://*: {conf.getint("SOCKET_PORT", "price_pub")}')
 rep_price_socket.bind(f'tcp://*: {conf.getint("SOCKET_PORT", "rep_price_pub")}')
