@@ -130,6 +130,35 @@ def product_list_by_code_reply(req_id, inst_code, is_ready, ret_msg):
 
 
 login()
+
+def add_normal_order(ProdCode, BuySell, Qty, Price=None, AO=False, OrderOption=0, ClOrderId='', ):
+    CondType = 0
+    price_map = {0: Price, 2: 0x7fffffff, 6: 0}
+    if Price:
+        assert isinstance(Price, (int, float))
+        OrderType = 0
+        Price = price_map[OrderType]
+    elif AO:
+        OrderType = 2
+        Price = price_map[OrderType]
+    else:
+        OrderType = 6
+        Price = price_map[OrderType]
+    kwargs={'ProdCode': ProdCode,
+            'BuySell': BuySell,
+            'Qty': Qty,
+            'Price': Price,
+            'CondType': CondType,
+            'OrderType': OrderType,
+            'OrderOption': OrderOption,
+            'ClOrderId': ClOrderId}
+    add_order(**kwargs)
+
+def add_stop_order(ProdCode, BuySell, Qty, Price, StopType='L', StopLevelValidType=0, ValidTime=None, OrderOption=0, ClOrderId=''):
+    CondType = 1
+    OrderType = 0
+
+
 # time.sleep(1)
 # subscribe_ticker('HSIF8', 1)
 # time.sleep(10)
