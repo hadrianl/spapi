@@ -173,50 +173,7 @@ def add_order(**kwargs):
     else:
         api_logger.error(f'添加订单失败,errcode:{ret},err:{RET_CODE_MSG_ORDER[ret]}')
         raise Exception(f'添加订单失败,errcode:{ret},err:{RET_CODE_MSG_ORDER[ret]}')
-    # order.BuySell = buy_sell.encode()
-    # order.Qty = qty
-    # order.ProdCode = prod_code.encode()
-    #
-    # order.GatewayCode = b''
-    # order.CondType = condtype
-    # order.DecInPrice = b'0'
-    # order.StopType = stoptype.encode()
-    # if 'ClOrderId' in kwargs: order.ClOrderId = kwargs['C1OrderId'].encode()
-    # order.ValidType = validtype
-    # order.DecInPrice = decinprice
-    # order.OrderType = ordertype
-    # try:
-    #     if order.CondType == 0:  # 普通指令
-    #         if order.OrderType == 0: # 限价指令
-    #             price_map = {0: price, 2: 0x7fffffff, 6: 0}
-    #             order.Price = price_map[order.OrderType]  #设定价格
 
-
-
-    # if order.CondType == 0:  # 限价指令类型,普通订单
-    #     if price:
-    #         order.OrderType = 0
-    #         order.Price = c_double(price)
-    #         order.Ref2 = b'Limit Order'
-    #     else:
-    #         order.OrderType = 6
-    #         order.Ref2 = b'Market Order'
-    # elif order.CondType == 1:
-    #     if order.StopType == b'L':
-    #         order.StopLevel = stoplevel
-    #         order.Price = price
-    #         order.ValidType = validtype  # 当天有效
-    #         order.Ref2 = b'Stop Limit Order'
-    #     elif order.StopType == b'U':
-    #         order.StopLevel = stoplevel
-    #         order.Price = price
-    #         order.ValidType = validtype  # 当天有效
-    #         order.Ref2 = b'Up Trigger Limit Order'
-    #     elif order.StopType == b'D':
-    #         order.StopLevel = stoplevel
-    #         order.Price = price
-    #         order.ValidType = validtype  # 当天有效
-    #         order.Ref2 = b'Down Trigger Limit Order'
 
 def add_inactive_order(**kwargs):
     order = SPApiOrder()
@@ -228,27 +185,6 @@ def add_inactive_order(**kwargs):
             _v = v.encode() if isinstance(v, str) else v
             setattr(order, k, _v)
 
-    # order.BuySell = buy_sell.encode()
-    # order.Qty = qty
-    # order.ProdCode = prod_code.encode()
-    # order.Ref = b'@PYTHON#TRADEAPI'
-    # order.Ref2 = b'0'
-    # order.GatewayCode = b''
-    # order.CondType = condtype
-    # order.DecInPrice = b'0'
-    # if 'ClOrderId' in kwargs: order.ClOrderId = kwargs['C1OrderId'].encode()
-    # order.ValidType = validtype
-    # order.DecInPrice = decinprice
-    # # if
-    # if is_ao:
-    #     order.OrderType = 2
-    #     order.Price = c_long(0x7fffffff)
-    #     order.StopType = 0
-    #     order.StopLevel = 0
-    # else:
-    #     order.OrderType = 0
-    #     order.Price = c_double(price)
-    #
     ret = spdll.SPAPI_AddOrder(byref(order))
     if ret == 0:
         api_logger.info(f'添加无效订单成功')

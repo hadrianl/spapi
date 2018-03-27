@@ -174,13 +174,18 @@ if __name__ == '__main__':
         func = pickle.loads(func)
         args = pickle.loads(args)
         kwargs = pickle.loads(kwargs)
-        func(*args, **kwargs)
+        try:
+            ret = func(*args, **kwargs)
+        except Exception as e:
+            ret = e
+        return ret
 
     while True:
         if is_login:
             while True:
                 func, args, kwargs = rep_socket.recv_multipart()
-                handle(func, args, kwargs)
+                ret = handle(func, args, kwargs)
+                rep_socket.send_pyobj(ret)
 
         #         handle = handle.decode()
         #         arg = arg.decode()

@@ -8,6 +8,8 @@
 import zmq
 from zmq import Context
 from threading import Thread
+import pickle
+from spAPI import *
 
 server_IP = '192.168.2.226'
 poller = zmq.Poller()
@@ -20,6 +22,16 @@ handle_socket.setsockopt(zmq.SNDTIMEO, 1000)
 handle_socket.setsockopt(zmq.RCVTIMEO, 1000)
 handle_socket.connect(f'tcp://{server_IP}:6666')
 
+
+def _s(func, *args, **kwargs):  # 序列化处理，把函数及其参数序列化
+    func = pickle.dumps(func)
+    args = pickle.dumps(args)
+    kwargs = pickle.dumps(kwargs)
+    handle_socket.send_multipart([func, args, kwargs])
+    ret = handle_socket.recv_pyobj()
+    if isinstance(ret, Exception):
+        raise ret
+    return ret
 
 class SubTicker:
     def __init__(self, prodcode, addr=f'tcp://{server_IP}:6868'):
@@ -63,14 +75,14 @@ class SubTicker:
 
 
     def sub(self):
-        handle_socket.send_multipart([b'sub_ticker', self._prodcode.encode()])
+        _s(subscribe_ticker, self._prodcode, 1)
         self.__is_sub = True
-        print(handle_socket.recv_string())
+
 
     def unsub(self):
-        handle_socket.send_multipart([b'unsub_ticker', self._prodcode.encode()])
+        _s(subscribe_ticker, self._prodcode, 0)
         self.__is_sub = False
-        print(handle_socket.recv_string())
+
 
 
 class SubPrice:
@@ -113,14 +125,12 @@ class SubPrice:
         return self.__is_active
 
     def sub(self):
-        handle_socket.send_multipart([b'sub_price', self._prodcode.encode()])
+        _s(subscribe_price, self._prodcode, 1)
         self.__is_sub = True
-        print(handle_socket.recv_string())
 
     def unsub(self):
-        handle_socket.send_multipart([b'unsub_price', self._prodcode.encode()])
+        _s(subscribe_price, self._prodcode, 0)
         self.__is_sub = False
-        print(handle_socket.recv_string())
 
     def get_price(self):
         req_price_socket.send_string(self._prodcode)
@@ -128,15 +138,40 @@ class SubPrice:
         return price
 
 
-def login(id=''):
-    handle_socket.send_multipart([b'login', id.encode()])
-    print(handle_socket.recv_string())
+def Login():
+    handle_socket.send_multipart([*_s(login)])
+    print(handle_socket.recv_pyobj())
 
 
-def logout(msg=''):
-    handle_socket.send_multipart([b'logout', msg.encode()])
-    print(handle_socket.recv_string())
+def Logout():
+    handle_socket.send_multipart([*_s(logout)])
+    print(handle_socket.recv_pyobj())
 
+
+def Add_normal_order(ProdCode, BuySell, Qty, Price=None, AO=False, OrderOption=0, ClOrderId='', ):
+    CondType = 0
+    price_map = {0: Price, 2: 0x7fffffff, 6: 0}
+    if Price:
+        assert isinstance(Price, (int, float))
+        OrderType = 0
+        Price = price_map[OrderType]
+    elif AO:
+        OrderType = 2
+        Price = price_map[OrderType]
+    else:
+        OrderType = 6
+        Price = price_map[OrderType]
+    kwargs={'ProdCode': ProdCode,
+            'BuySell': BuySell,
+            'Qty': Qty,
+            'Price': Price,
+            'CondType': CondType,
+            'OrderType': OrderType,
+            'OrderOption': OrderOption,
+            'ClOrderId': ClOrderId}
+    return _s(add_order, **kwargs)
+
+# def Get_
 
 def help():
     """
@@ -144,7 +179,7 @@ def help():
     :return:
     """
     handle_socket.send_multipart([b'help', b''])
-    print(handle_socket.recv_string())
+    print(handle_socket.recv_pyobj())
 
 
 def ticker_into_db(prodcode):
@@ -153,8 +188,10 @@ def ticker_into_db(prodcode):
     :param prodcode: 产品代码
     :return:
     """
-    handle_socket.send_multipart([ b'into_db', prodcode.encode()])
-    print(handle_socket.recv_string())
+    def func(prodcode):
+        to_sql_list.add(prodcode)
+    handle_socket.send_multipart([*_s(func, prodcode)])
+    print(handle_socket.recv_pyobj())
 
 
 def ticker_outof_db(prodcode):
@@ -163,8 +200,10 @@ def ticker_outof_db(prodcode):
     :param prodcode: 产品代码
     :return:
     """
-    handle_socket.send_multipart([b'outof_db', prodcode.encode()])
-    print(handle_socket.recv_string())
+    def func(prodcode):
+        to_sql_list.add(prodcode)
+    handle_socket.send_multipart([*_s(func, prodcode)])
+    print(handle_socket.recv_pyobj())
 
 
 def to_sql_list():
@@ -172,8 +211,10 @@ def to_sql_list():
     获取插入到数据库的代码列表
     :return:
     """
-    handle_socket.send_multipart([b'to_sql_list', b''])
-    l = handle_socket.recv_string().split(',')
+    def func():
+        return to_sql_list
+    handle_socket.send_multipart([*_s(func)])
+    l = handle_socket.recv_pyobj()
     return l
 
 
@@ -182,8 +223,10 @@ def sub_ticker_list():
     获取正在订阅ticker的代码列表
     :return:
     """
-    handle_socket.send_multipart([b'sub_ticker_list', b''])
-    l = handle_socket.recv_string().split(',')
+    def func():
+        return sub_ticker_list
+    handle_socket.send_multipart([*_s(func)])
+    l = handle_socket.recv_pyobj()
     return l
 
 
@@ -192,18 +235,20 @@ def sub_price_list():
     获取正在订阅price的代码列表
     :return:
     """
-    handle_socket.send_multipart([b'sub_price_list', b''])
-    l = handle_socket.recv_string().split(',')
+    def func():
+        return sub_price_list
+    handle_socket.send_multipart([*_s(func)])
+    l = handle_socket.recv_pyobj()
     return l
 
-def check_thread_alive():
-    """
-    查询get_price线程是否alive
-    :return:
-    """
-    handle_socket.send_multipart([b'check_thread_alive', b''])
-    l = handle_socket.recv_string()
-    print(l)
+# def check_thread_alive():
+#     """
+#     查询get_price线程是否alive
+#     :return:
+#     """
+#     handle_socket.send_multipart([b'check_thread_alive', b''])
+#     l = handle_socket.recv_string()
+#     print(l)
 
 
 # while True:
