@@ -63,6 +63,15 @@ def reply(user_id, ret_code, ret_msg):
         server_logger.info(f'@{user_id.decode()}登录成功')
     else:
         server_logger.error(f'@{user_id.decode()}登录失败--errcode:{ret_code}--errmsg:{ret_msg.decode()}')
+    try:
+        for t in sub_ticker_list:
+            if subscribe_ticker(t, 1) == 0:
+                server_logger.info(f'{t}-Ticker续订成功')
+        for p in sub_price_list:
+            if subscribe_ticker(p, 1) == 0:
+                server_logger.info(f'{p}-Price续订成功')
+    except Exception as e:
+        server_logger.info(f'账户：{loginfo.get(spid, "user_id")}-续订数据失败')
 
 
 @on_ticker_update
@@ -95,20 +104,18 @@ def connecting_reply(host_type, con_status):
     server_logger.info(f'连接状态改变:{HOST_TYPE[host_type]}-{HOST_CON_STATUS[con_status]}')
     if con_status >=3:
         for i in range(3):
-            if login() == 0:
-                server_logger.info(f'账户：{loginfo.get(spid, "user_id")}-断线重连成功')
+            try:
+                logout()
                 time.sleep(1)
-                try:
-                    for t in sub_ticker_list:
-                        if subscribe_ticker(t, 1) == 0:
-                            server_logger.info(f'{t}-Ticker续订成功')
-                    for p in sub_price_list:
-                        if subscribe_ticker(p, 1) == 0:
-                            server_logger.info(f'{p}-Price续订成功')
-                    break
-                except Exception as e:
-                    server_logger.info(f'账户：{loginfo.get(spid, "user_id")}-续订数据失败')
-            else:
+                break
+            except Exception:
+                ...
+        for i in range(3):
+            try:
+                login()
+                server_logger.info(f'账户：{loginfo.get(spid, "user_id")}-断线重连成功')
+                break
+            except:
                 server_logger.error(f'账户：{loginfo.get(spid, "user_id")}-断线重连失败')
                 time.sleep(3)
         else:
@@ -147,9 +154,13 @@ def get_price():
     while True:
         prodcode = rep_price_socket.recv_string()
         server_logger.info(f'请求{prodcode}数据')
-        price = get_price_by_code(prodcode)
+        try:
+            price = get_price_by_code(prodcode)
+        except Exception:
+            price = None
         rep_price_socket.send_pyobj(price)
         server_logger.info(f'发送{prodcode}数据成功')
+
 
 
 if __name__ == '__main__':
