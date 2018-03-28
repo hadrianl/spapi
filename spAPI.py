@@ -8,7 +8,7 @@
 import logging.config
 import os
 from spapi.sp_struct import *
-from conf.util import *
+from spapi.conf.util import *
 
 dirpath = os.path.dirname(__file__)
 spdll = cdll.LoadLibrary(os.path.join(dirpath, 'dll','spapidllm64.dll'))
