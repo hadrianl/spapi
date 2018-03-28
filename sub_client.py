@@ -8,8 +8,8 @@
 import zmq
 from zmq import Context
 from threading import Thread
-import pickle
 from spAPI import *
+from handle_func import dumps
 
 server_IP = '192.168.2.226'
 poller = zmq.Poller()
@@ -24,10 +24,7 @@ handle_socket.connect(f'tcp://{server_IP}:6666')
 
 
 def _s(func, *args, **kwargs):  # 序列化处理，把函数及其参数序列化
-    func = pickle.dumps(func)
-    args = pickle.dumps(args)
-    kwargs = pickle.dumps(kwargs)
-    handle_socket.send_multipart([func, args, kwargs])
+    handle_socket.send_multipart([*dumps(func, *args, **kwargs)])
     ret = handle_socket.recv_pyobj()
     if isinstance(ret, Exception):
         raise ret
@@ -139,13 +136,11 @@ class SubPrice:
 
 
 def Login():
-    handle_socket.send_multipart([*_s(login)])
-    print(handle_socket.recv_pyobj())
+    _s(login)
 
 
 def Logout():
-    handle_socket.send_multipart([*_s(logout)])
-    print(handle_socket.recv_pyobj())
+    _s(logout)
 
 
 def Add_normal_order(ProdCode, BuySell, Qty, Price=None, AO=False, OrderOption=0, ClOrderId='', ):
@@ -173,73 +168,20 @@ def Add_normal_order(ProdCode, BuySell, Qty, Price=None, AO=False, OrderOption=0
 
 # def Get_
 
-def help():
-    """
-    帮助文档
-    :return:
-    """
-    handle_socket.send_multipart([b'help', b''])
-    print(handle_socket.recv_pyobj())
+def into_sql(prodcode):
+    _s('to_sql', prodcode, 1)
 
-
-def ticker_into_db(prodcode):
-    """
-    将prodcode插入到数据库
-    :param prodcode: 产品代码
-    :return:
-    """
-    def func(prodcode):
-        to_sql_list.add(prodcode)
-    handle_socket.send_multipart([*_s(func, prodcode)])
-    print(handle_socket.recv_pyobj())
-
-
-def ticker_outof_db(prodcode):
-    """
-    讲prodcode停止插入数据库
-    :param prodcode: 产品代码
-    :return:
-    """
-    def func(prodcode):
-        to_sql_list.add(prodcode)
-    handle_socket.send_multipart([*_s(func, prodcode)])
-    print(handle_socket.recv_pyobj())
-
+def outof_sql(prodcode):
+    _s('to_sql', prodcode, 0)
 
 def to_sql_list():
-    """
-    获取插入到数据库的代码列表
-    :return:
-    """
-    def func():
-        return to_sql_list
-    handle_socket.send_multipart([*_s(func)])
-    l = handle_socket.recv_pyobj()
-    return l
-
+    return _s('get_to_sql_list')
 
 def sub_ticker_list():
-    """
-    获取正在订阅ticker的代码列表
-    :return:
-    """
-    def func():
-        return sub_ticker_list
-    handle_socket.send_multipart([*_s(func)])
-    l = handle_socket.recv_pyobj()
-    return l
-
+    return _s('get_sub_ticker_list')
 
 def sub_price_list():
-    """
-    获取正在订阅price的代码列表
-    :return:
-    """
-    def func():
-        return sub_price_list
-    handle_socket.send_multipart([*_s(func)])
-    l = handle_socket.recv_pyobj()
-    return l
+    return _s('get_sub_price_list')
 
 # def check_thread_alive():
 #     """
@@ -292,4 +234,6 @@ if __name__ == '__main__':
     on_price = SubPrice(symbol)
     on_tick.sub()
     on_price.sub()
-    ticker_into_db(symbol)
+    into_sql(symbol)
+    print(sub_price_list())
+    print(sub_ticker_list())

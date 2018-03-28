@@ -16,13 +16,15 @@ import configparser
 import logging.config
 from datetime import datetime
 from queue import Queue
+import os
+import pickle
 
-
+dirpath = os.path.dirname(__file__)  # 获取模块路径
 conf = configparser.ConfigParser()
-conf.read(r'conf\conf.ini')
+conf.read(os.path.join(dirpath, 'conf', 'conf.ini'))
 loginfo = configparser.ConfigParser()
-loginfo.read(r'conf\loginfo.ini')
-logging.config.fileConfig(r'conf\sp_log.conf')
+loginfo.read(os.path.join(dirpath,'conf', 'loginfo.ini'))
+logging.config.fileConfig(os.path.join(dirpath,'conf', 'sp_log.conf'))
 server_logger = logging.getLogger('root.sp_server')
 dbconfig = {'host': conf.get('MYSQL', 'host'),
             'port': conf.getint('MYSQL', 'port'),
@@ -45,6 +47,7 @@ cursor = conn.cursor()
 to_sql_list = set()
 sub_ticker_list = set()
 sub_price_list = set()
+
 spid = 'SP_ID2'
 initialize()
 sp_config = {'host': loginfo.get(spid, 'host'),
@@ -161,21 +164,45 @@ def get_price():
         rep_price_socket.send_pyobj(price)
         server_logger.info(f'发送{prodcode}数据成功')
 
+def to_sql(prodcode, mode):
+    if mode == 1:
+        to_sql_list.add(prodcode)
+    elif mode == 0:
+        to_sql_list.remove(prodcode)
+    else:
+        raise Exception(f'不存在mode:{mode}')
+
+def get_to_sql_list():
+    return to_sql_list
+
+def get_sub_ticker_list():
+    return sub_ticker_list
+
+def get_sub_price_list():
+    return sub_price_list
+
+
+
 
 
 if __name__ == '__main__':
-    import pickle
+    from handle_func import handle
+    from inspect import isfunction
     is_login = True
     get_price_thread = Thread(target=get_price)
     insert_ticker_thread = Thread(target=insert_ticker)
     get_price_thread.start()
     insert_ticker_thread.start()
-    def handle(func, args, kwargs):
-        func = pickle.loads(func)
-        args = pickle.loads(args)
-        kwargs = pickle.loads(kwargs)
+    def handle_str_func(_func, _args, _kwargs):
+        func = pickle.loads(_func)
+        args = pickle.loads(_args)
+        kwargs = pickle.loads(_kwargs)
+        handle = getattr(sys.modules['__main__'], func, None)
         try:
-            ret = func(*args, **kwargs)
+            if handle:
+                ret = handle(*args, **kwargs)
+            else:
+                raise Exception(f'不存在{func}')
         except Exception as e:
             ret = e
         return ret
@@ -183,9 +210,31 @@ if __name__ == '__main__':
     while True:
         if is_login:
             while True:
-                func, args, kwargs = rep_socket.recv_multipart()
-                ret = handle(func, args, kwargs)
+                _func, _args, _kwargs = rep_socket.recv_multipart()
+                func = pickle.loads(_func)
+
+                if isfunction(func):
+                    ret = handle(_func, _args, _kwargs)
+                    if func.__name__ == 'subscribe_ticker':
+                        prodcode, mode = pickle.loads(_args)
+                        if mode == 1:
+                            sub_ticker_list.add(prodcode)
+                        else:
+                            sub_ticker_list.remove(prodcode)
+                    elif func.__name__ == 'subscribe_price':
+                        prodcode, mode = pickle.loads(_args)
+                        if mode == 1:
+                            sub_price_list.add(prodcode)
+                        else:
+                            sub_price_list.remove(prodcode)
+
+                elif isinstance(func, str):
+                    ret = handle_str_func(_func, _args, _kwargs)
+
                 rep_socket.send_pyobj(ret)
+
+
+
 
         #         handle = handle.decode()
         #         arg = arg.decode()

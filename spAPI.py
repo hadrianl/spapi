@@ -6,12 +6,13 @@
 # @License : (C) Copyright 2013-2017, 凯瑞投资
 
 import logging.config
-
+import os
 from sp_struct import *
 from conf.util import *
 
-spdll = cdll.LoadLibrary(r'dll\spapidllm64.dll')
-logging.config.fileConfig(r'conf\sp_log.conf')
+dirpath = os.path.dirname(__file__)
+spdll = cdll.LoadLibrary(os.path.join(dirpath, 'dll','spapidllm64.dll'))
+logging.config.fileConfig(os.path.join(dirpath, 'conf', 'sp_log.conf'))
 api_logger = logging.getLogger('root.sp_api')
 
 
