@@ -8,10 +8,10 @@
 import zmq
 from zmq import Context
 from threading import Thread
-from spAPI import *
-from handle_func import dumps
+from spapi.spAPI import *
+from spapi.handle_func import dumps
 
-server_IP = '192.168.2.226'
+server_IP = '192.168.2.237'
 poller = zmq.Poller()
 ctx = Context()
 req_price_socket = ctx.socket(zmq.REQ)

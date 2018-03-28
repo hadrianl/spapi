@@ -6,7 +6,7 @@
 # @License : (C) Copyright 2013-2017, 凯瑞投资
 
 
-from spAPI import *
+from spapi.spAPI import *
 import time
 from datetime import datetime
 import configparser

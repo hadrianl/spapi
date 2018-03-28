@@ -2,12 +2,12 @@
 # -*- coding: utf-8 -*-
 # @Time    : 2018/1/4 0004 10:02
 # @Author  : Hadrianl 
-# @File    : spAPI.py
+# @File    : spapi.py
 # @License : (C) Copyright 2013-2017, 凯瑞投资
 
 import logging.config
 import os
-from sp_struct import *
+from spapi.sp_struct import *
 from conf.util import *
 
 dirpath = os.path.dirname(__file__)

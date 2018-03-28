@@ -6,7 +6,7 @@
 # @License : (C) Copyright 2013-2017, 凯瑞投资
 
 
-from spAPI import *
+from spapi.spAPI import *
 import zmq
 from zmq import Context
 import pymysql as pm
