@@ -14,7 +14,7 @@ if not os.path.exists('SP_LOG'):
     os.mkdir('SP_LOG')
 dirpath = os.path.dirname(__file__)
 spdll = cdll.LoadLibrary(os.path.join(dirpath, 'dll','spapidllm64.dll'))
-logging.config.fileConfig(os.path.join(dirpath, 'conf', 'sp_log.conf'))
+logging.config.fileConfig(os.path.join(dirpath, 'conf', 'sp_log.conf'), disable_existing_loggers=False)
 api_logger = logging.getLogger('root.sp_api')
 
 
