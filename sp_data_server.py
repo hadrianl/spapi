@@ -152,6 +152,13 @@ def connecting_reply(host_type, con_status):
             del MIMEMultipart
             del MIMEApplication
 
+@on_order_request_failed  # 订单请求失败时候调用
+def order_request_failed(action, order, err_code, err_msg):
+    server_logger.info(f'订单请求失败--ACTION:{action}-ProdCode:{order.ProdCode.decode()}-Price:{order.Price}-errcode;{err_code}-errmsg:{err_msg.decode()}')
+
+@on_order_before_send_report  # 订单发送前调用
+def order_before_snd_report(order):
+    server_logger.info(f'即将发送订单请求--ProdCode:{order.ProdCode.decode()}-Price:{order.Price}-Qty:{order.Qty}-BuySell:{order.BuySell.decode()}')
 
 
 login()

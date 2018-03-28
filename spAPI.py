@@ -171,11 +171,11 @@ def add_order(**kwargs):
 
     ret = spdll.SPAPI_AddOrder(byref(order))
     if ret == 0:
-        api_logger.info(f'添加订单成功')
+        api_logger.info(f'发送订单成功')
         return ret
     else:
-        api_logger.error(f'添加订单失败,errcode:{ret},err:{RET_CODE_MSG_ORDER[ret]}')
-        raise Exception(f'添加订单失败,errcode:{ret},err:{RET_CODE_MSG_ORDER[ret]}')
+        api_logger.error(f'发送订单失败,errcode:{ret},err:{RET_CODE_MSG_ORDER[ret]}')
+        raise Exception(f'发送订单失败,errcode:{ret},err:{RET_CODE_MSG_ORDER[ret]}')
 
 
 def add_inactive_order(**kwargs):
