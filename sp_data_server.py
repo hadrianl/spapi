@@ -146,6 +146,10 @@ def connecting_reply(host_type, con_status):
             smtp.login(loginfo.get('EMAIL', 'username'), loginfo.get('EMAIL', 'password'))
             smtp.sendmail(me, '137150224@qq.com', msg.as_string())
             smtp.quit()
+            del smtplib
+            del MIMEText
+            del MIMEMultipart
+            del MIMEApplication
 
 
 
