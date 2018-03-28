@@ -5,6 +5,10 @@
 # @File    : sp_data_server.py
 # @License : (C) Copyright 2013-2017, 凯瑞投资
 
+import sys
+import os
+dirpath = os.path.dirname(__file__)  # 获取模块路径
+sys.path.append(os.path.dirname(dirpath))
 
 from spapi.spAPI import *
 import zmq
@@ -16,10 +20,10 @@ import configparser
 import logging.config
 from datetime import datetime
 from queue import Queue
-import os
+
 import pickle
 
-dirpath = os.path.dirname(__file__)  # 获取模块路径
+
 conf = configparser.ConfigParser()
 conf.read(os.path.join(dirpath, 'conf', 'conf.ini'))
 loginfo = configparser.ConfigParser()
