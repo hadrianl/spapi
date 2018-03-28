@@ -10,6 +10,8 @@ import os
 from spapi.sp_struct import *
 from spapi.conf.util import *
 
+if not os.path.exists('SP_LOG'):
+    os.mkdir('SP_LOG')
 dirpath = os.path.dirname(__file__)
 spdll = cdll.LoadLibrary(os.path.join(dirpath, 'dll','spapidllm64.dll'))
 logging.config.fileConfig(os.path.join(dirpath, 'conf', 'sp_log.conf'))
