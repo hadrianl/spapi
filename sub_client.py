@@ -11,7 +11,7 @@ from threading import Thread
 from spapi.spAPI import *
 from spapi.handle_func import dumps
 
-server_IP = '192.168.2.237'
+server_IP = '192.168.2.226'
 poller = zmq.Poller()
 ctx = Context()
 req_price_socket = ctx.socket(zmq.REQ)
@@ -33,7 +33,7 @@ def _s(func, *args, **kwargs):  # 序列化处理，把函数及其参数序列�
 class SubTicker:
     def __init__(self, prodcode, addr=f'tcp://{server_IP}:6868'):
         self._sub_socket = ctx.socket(zmq.SUB)
-        self._sub_socket.set_string(zmq.SUBSCRIBE, prodcode)
+        self._sub_socket.set_string(zmq.SUBSCRIBE, '')
         self._sub_socket.setsockopt(zmq.RCVTIMEO, 5000)
         self._addr = addr
         self._prodcode = prodcode
@@ -85,7 +85,7 @@ class SubTicker:
 class SubPrice:
     def __init__(self, prodcode, addr=f'tcp://{server_IP}:6869'):
         self._sub_socket = ctx.socket(zmq.SUB)
-        self._sub_socket.set_string(zmq.SUBSCRIBE, prodcode)
+        self._sub_socket.set_string(zmq.SUBSCRIBE, '')
         self._sub_socket.setsockopt(zmq.RCVTIMEO, 5000)
         self._addr = addr
         self._prodcode = prodcode
@@ -229,7 +229,8 @@ if __name__ == '__main__':
                          11: 'X',
                          12: 'Z'
                          }
-    symbol = 'HSI' + MONTH_LETTER_MAPS[dt.datetime.now().month] + str(dt.datetime.now().year)[-1]
+    # symbol = 'HSI' + MONTH_LETTER_MAPS[dt.datetime.now().month] + str(dt.datetime.now().year)[-1]
+    symbol = 'HSIJ8'
     on_tick = SubTicker(symbol)
     on_price = SubPrice(symbol)
     on_tick.sub()
