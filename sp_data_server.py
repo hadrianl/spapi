@@ -49,7 +49,7 @@ to_sql_list = set()
 sub_ticker_list = set()
 sub_price_list = set()
 
-spid = 'SP_ID2'
+spid = 'SP_ID1'
 initialize()
 sp_config = {'host': loginfo.get(spid, 'host'),
              'port': loginfo.getint(spid, 'port'),
@@ -60,52 +60,68 @@ sp_config = {'host': loginfo.get(spid, 'host'),
 set_login_info(**sp_config)
 insert_ticker_queue = Queue()
 
-
+# -----------------------------------------------初始登录的信息回调------------------------------------------------------------------------------
 @on_login_reply  # 登录成功时候调用
 def reply(user_id, ret_code, ret_msg):
     if ret_code == 0:
-        server_logger.info(f'@{user_id.decode()}登录成功')
+        server_logger.info(f'<账户>{user_id.decode()}登录成功')
     else:
-        server_logger.error(f'@{user_id.decode()}登录失败--errcode:{ret_code}--errmsg:{ret_msg.decode()}')
+        server_logger.error(f'<账户>{user_id.decode()}登录失败--errcode:{ret_code}--errmsg:{ret_msg.decode()}')
     try:
         for t in sub_ticker_list:
             if subscribe_ticker(t, 1) == 0:
-                server_logger.info(f'{t}-Ticker续订成功')
+                server_logger.info(f'<数据>Ticker-{t}续订成功')
         for p in sub_price_list:
             if subscribe_ticker(p, 1) == 0:
-                server_logger.info(f'{p}-Price续订成功')
+                server_logger.info(f'<数据>Price-{p}续订成功')
     except Exception as e:
-        server_logger.info(f'账户：{loginfo.get(spid, "user_id")}-续订数据失败')
+        server_logger.info(f'<数据>续订数据失败')
 
+@on_account_login_reply  # 普通客户登入回调
+def login_reply(accNo, ret_code, ret_msg):
+    if ret_code == 0:
+        server_logger.info(f'<账户>{accNo.decode()}登入成功')
+    else:
+        server_logger.error(f'<账户>{accNo.decode()}登入失败--errcode:{ret_code}--errmsg:{ret_msg.decode()}')
 
-@on_ticker_update
+@on_account_logout_reply  # 登出成功后调用
+def logout_reply(accNo, ret_code, ret_msg):
+    if ret_code == 0:
+        server_logger.info(f'<账户>{accNo.decode()}登出成功')
+    else:
+        server_logger.error(f'<账户>{accNo.decode()}登出失败--errcode:{ret_code}--errmsg:{ret_msg.decode()}')
+
+@on_account_info_push  # 普通客户登入后返回登入前的户口信息
+def account_info_push(acc_info):
+    server_logger.info(f'<账户>{acc_info.ClientId.decode()}信息--NAV:{acc_info.NAV}-BaseCcy:{acc_info.BaseCcy.decode()}-BuyingPower:{acc_info.BuyingPower}-CashBal:{acc_info.CashBal}')
+
+@on_load_trade_ready_push  # 登入后，登入前已存的成交信息推送
+def trade_ready_push(rec_no, trade):
+    server_logger.info(f'<成交>历史成交记录--NO:{rec_no}--{trade.OpenClose.decode()}成交@{trade.ProdCode.decode()}--{trade.BuySell.decode()}--Price:{trade.Price}--Qty:{trade.Qty}')
+
+@on_account_position_push  # 普通客户登入后返回登入前的已存在持仓信息
+def account_position_push(pos):
+    server_logger.info(f'<持仓>历史持仓信息--ProdCode:{pos.ProdCode.decode()}-PLBaseCcy:{pos.PLBaseCcy}-PL:{pos.PL}-Qty:{pos.Qty}-DepQty:{pos.DepQty}')
+
+@on_business_date_reply  # 登录成功后会返回一个交易日期
+def business_date_reply(business_date):
+    server_logger.info(f'<日期>当前交易日--{datetime.fromtimestamp(business_date)}')
+# ------------------------------------------------------------------------------------------------------------------------------------------------------
+
+# ----------------------------------------行情数据主推---------------------------------------------------------------------------------------------------
+@on_ticker_update  # ticker数据推送
 def ticker_update(ticker):
     ticker_socket.send_pyobj(ticker)
     insert_ticker_queue.put(ticker)
 
-
-def insert_ticker():
-    while True:
-        try:
-            ticker = insert_ticker_queue.get()
-            if ticker.ProdCode.decode() in to_sql_list:
-                sql = f'insert into futures_tick(prodcode, price, tickertime, qty, dealsrc, decinprice) \
-            values ("{ticker.ProdCode.decode()}", {ticker.Price}, "{datetime.fromtimestamp(ticker.TickerTime)}", \
-            {ticker.Qty}, {ticker.DealSrc}, "{ticker.DecInPrice.decode()}")'
-                cursor.execute(sql)
-                conn.commit()
-        except pm.Error as e:
-            server_logger.info(f'sqlerror:{e}')
-            conn.ping()
-
-@on_api_price_update
+@on_api_price_update  # price数据推送
 def price_update(price):
     price_socket.send_pyobj(price)
+# -------------------------------------------------------------------------------------------------------------------------------------------------------
 
-
-@on_connecting_reply
+@on_connecting_reply  # 连接状态改变时调用
 def connecting_reply(host_type, con_status):
-    server_logger.info(f'连接状态改变:{HOST_TYPE[host_type]}-{HOST_CON_STATUS[con_status]}')
+    server_logger.info(f'<账户>{HOST_TYPE[host_type]}连接状态改变--{HOST_CON_STATUS[con_status]}')
     if con_status >=3:
         for i in range(3):
             try:
@@ -117,13 +133,13 @@ def connecting_reply(host_type, con_status):
         for i in range(3):
             try:
                 login()
-                server_logger.info(f'账户：{loginfo.get(spid, "user_id")}-断线重连成功')
+                server_logger.info(f'<账户>{loginfo.get(spid, "user_id")}-断线重连成功')
                 break
             except:
-                server_logger.error(f'账户：{loginfo.get(spid, "user_id")}-断线重连失败')
+                server_logger.error(f'<账户>{loginfo.get(spid, "user_id")}-断线重连失败')
                 time.sleep(3)
         else:
-            server_logger.info(f'账户：{loginfo.get(spid, "user_id")}-断线重连三次失败')
+            server_logger.info(f'<账户>{loginfo.get(spid, "user_id")}-断线重连三次失败')
 
             import smtplib
             from email.mime.text import MIMEText
@@ -152,13 +168,72 @@ def connecting_reply(host_type, con_status):
             del MIMEMultipart
             del MIMEApplication
 
+# -----------------------------------------------登入后的新信息回调------------------------------------------------------------------------------
 @on_order_request_failed  # 订单请求失败时候调用
 def order_request_failed(action, order, err_code, err_msg):
-    server_logger.info(f'订单请求失败--ACTION:{action}-ProdCode:{order.ProdCode.decode()}-Price:{order.Price}-errcode;{err_code}-errmsg:{err_msg.decode()}')
+    server_logger.error(f'<订单>请求失败--ACTION:{action}-@{order.ProdCode.decode()}-Price:{order.Price}-Qty:{order.Qty}-BuySell:{order.BuySell.decode()}      errcode;{err_code}-errmsg:{err_msg.decode()}')
 
 @on_order_before_send_report  # 订单发送前调用
 def order_before_snd_report(order):
-    server_logger.info(f'即将发送订单请求--ProdCode:{order.ProdCode.decode()}-Price:{order.Price}-Qty:{order.Qty}-BuySell:{order.BuySell.decode()}')
+    server_logger.info(f'<订单>即将发送请求--@{order.ProdCode.decode()}-Price:{order.Price}-Qty:{order.Qty}-BuySell:{order.BuySell.decode()}')
+
+@on_trade_report  # 成交记录更新后回调出推送新的成交记录
+def trade_report(rec_no, trade):
+    server_logger.info(f'<成交>{rec_no}新成交{trade.OpenClose.decode()}--@{trade.ProdCode.decode()}--{trade.BuySell.decode()}--Price:{trade.Price}--Qty:{trade.Qty}')
+
+@on_updated_account_position_push  # 新持仓信息
+def updated_account_position_push(pos):
+    server_logger.info(f'<持仓>信息变动--@{pos.ProdCode.decode()}-PLBaseCcy:{pos.PLBaseCcy}-PL:{pos.PL}-Qty:{pos.Qty}-DepQty:{pos.DepQty}')
+
+@on_updated_account_balance_push  # 户口账户发生变更时的回调，新的账户信息
+def updated_account_balance_push(acc_bal):
+    server_logger.info(f'<账户>信息变动-{acc_bal.Ccy.decode()}-CashBF:{acc_bal.CashBF}-TodayCash:{acc_bal.TodayCash}-NotYetValue:{acc_bal.NotYetValue}-Unpresented:{acc_bal.Unpresented}-TodayOut:{acc_bal.TodayOut}')
+# ------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+# ------------------------------------------------------------请求回调函数------------------------------------------------------------------------------------
+@on_order_report  # 订单报告的回调推送
+def order_report(rec_no, order):
+    server_logger.info(f'<订单>--编号:{rec_no}-@{order.ProdCode.decode()}-Status:{ORDER_STATUS[order.Status]}')
+
+@on_instrument_list_reply  # 产品系列信息的回调推送，用load_instrument_list()触发
+def inst_list_reply(req_id, is_ready, ret_msg):
+    if is_ready:
+        server_logger.info(f'<产品>信息加载成功      req_id:{req_id}-msg:{ret_msg.decode()}')
+    else:
+        server_logger.info(f'<产品>信息正在加载......req_id{req_id}-msg:{ret_msg.decode()}')
+
+@on_product_list_by_code_reply  # 根据产品系列名返回合约信息
+def product_list_by_code_reply(req_id, inst_code, is_ready, ret_msg):
+    if is_ready:
+        if inst_code == '':
+            server_logger.info(f'<合约>该产品系列没有合约信息      req_id:{req_id}-msg:{ret_msg.decode()}')
+        else:
+            server_logger.info(f'<合约>产品：{inst_code.decode()}合约信息加载成功      req_id:{req_id}-msg:{ret_msg.decode()}')
+    else:
+        server_logger.info(f'<合约>产品：{inst_code.decode()}合约信息正在加载......req_id{req_id}-msg:{ret_msg.decode()}')
+
+@on_pswchange_reply  # 修改密码调用
+def pswchange_reply(ret_code, ret_msg):
+    if ret_code == 0:
+        server_logger.info('<密码>修改成功')
+    else:
+        server_logger.error(f'<密码>修改失败  errcode:{ret_code}-errmsg:{ret_msg.decode()}')
+# ---------------------------------------------------------------------------------------------------------------------------------------------------------
+
+def insert_ticker():
+    while True:
+        try:
+            ticker = insert_ticker_queue.get()
+            if ticker.ProdCode.decode() in to_sql_list:
+                sql = f'insert into futures_tick(prodcode, price, tickertime, qty, dealsrc, decinprice) \
+            values ("{ticker.ProdCode.decode()}", {ticker.Price}, "{datetime.fromtimestamp(ticker.TickerTime)}", \
+            {ticker.Qty}, {ticker.DealSrc}, "{ticker.DecInPrice.decode()}")'
+                cursor.execute(sql)
+                conn.commit()
+        except pm.Error as e:
+            server_logger.info(f'sqlerror:{e}')
+            conn.ping()
+
 
 
 login()

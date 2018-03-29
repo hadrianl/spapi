@@ -110,7 +110,7 @@ def account_info_push(acc_info):
 def account_position_push(pos):
     print(f'@{pos.AccNo.decode()}持仓信息--ProdCode:{pos.ProdCode.decode()}-PLBaseCcy:{pos.PLBaseCcy}-Qty:{pos.Qty}')
 
-@on_updated_account_position_push  # 普通客户登入后返回登入前的已存在持仓信息
+@on_updated_account_position_push  # 普通客户登入后的新持仓信息
 def updated_account_position_push(pos):
     print(f'@{pos.AccNo.decode()}持仓信息--ProdCode:{pos.ProdCode.decode()}-PLBaseCcy:{pos.PLBaseCcy}-Qty:{pos.Qty}')
 
@@ -122,11 +122,11 @@ def updated_account_balance_push(acc_bal):
 def product_list_by_code_reply(req_id, inst_code, is_ready, ret_msg):
     if is_ready:
         if inst_code == '':
-            print(f'合约信息-{req_id}:该系列没有product信息   {ret_msg.decode()}')
+            print(f'合约信息-{req_id}:该系列没有product信息{ret_msg.decode()}')
         else:
-            print(f'合约信息-{req_id}:{inst_code.decode()}产品合约信息加载成功    {ret_msg.decode()}')
+            print(f'合约信息-{req_id}:{inst_code.decode()}产品合约信息加载成功{ret_msg.decode()}')
     else:
-        print(f'合约信息-{req_id}:{inst_code.decode()}产品合约信息加载未完成    {ret_msg.decode()}')
+        print(f'合约信息-{req_id}:{inst_code.decode()}产品合约信息正在加载{ret_msg.decode()}')
 
 
 login()
