@@ -120,8 +120,8 @@ def price_update(price):
 # -------------------------------------------------------------------------------------------------------------------------------------------------------
 
 @on_connecting_reply  # 连接状态改变时调用
-def connecting_reply(host_type, con_status):
-    server_logger.info(f'<账户>{HOST_TYPE[host_type]}连接状态改变--{HOST_CON_STATUS[con_status]}')
+def connecting_reply(host_id, con_status):
+    server_logger.info(f'<连接>{HOST_TYPE[host_id]}状态改变--{HOST_CON_STATUS[con_status]}')
     if con_status >=3:
         for i in range(3):
             try:
@@ -187,7 +187,7 @@ def updated_account_position_push(pos):
 
 @on_updated_account_balance_push  # 户口账户发生变更时的回调，新的账户信息
 def updated_account_balance_push(acc_bal):
-    server_logger.info(f'<账户>信息变动-{acc_bal.Ccy.decode()}-CashBF:{acc_bal.CashBF}-TodayCash:{acc_bal.TodayCash}-NotYetValue:{acc_bal.NotYetValue}-Unpresented:{acc_bal.Unpresented}-TodayOut:{acc_bal.TodayOut}')
+    server_logger.info(f'<结余>信息变动-{acc_bal.Ccy.decode()}-CashBF:{acc_bal.CashBF}-TodayCash:{acc_bal.TodayCash}-NotYetValue:{acc_bal.NotYetValue}-Unpresented:{acc_bal.Unpresented}-TodayOut:{acc_bal.TodayOut}')
 # ------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 # ------------------------------------------------------------请求回调函数------------------------------------------------------------------------------------
