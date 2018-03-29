@@ -45,6 +45,7 @@ rep_price_socket.bind(f'tcp://*: {conf.getint("SOCKET_PORT", "rep_price_pub")}')
 rep_socket.bind(f'tcp://*: {conf.getint("SOCKET_PORT", "handle_rep")}')
 conn = pm.connect(**dbconfig)
 cursor = conn.cursor()
+login_flag = False
 to_sql_list = set()
 sub_ticker_list = set()
 sub_price_list = set()
@@ -61,21 +62,25 @@ set_login_info(**sp_config)
 insert_ticker_queue = Queue()
 
 # -----------------------------------------------初始登录的信息回调------------------------------------------------------------------------------
-@on_login_reply  # 登录成功时候调用
+@on_login_reply  # 登录调用
 def reply(user_id, ret_code, ret_msg):
     if ret_code == 0:
+        global login_flag
         server_logger.info(f'<账户>{user_id.decode()}登录成功')
+        login_flag = True
+        try:
+            for t in sub_ticker_list:
+                if subscribe_ticker(t, 1) == 0:
+                    server_logger.info(f'<数据>Ticker-{t}续订成功')
+            for p in sub_price_list:
+                if subscribe_ticker(p, 1) == 0:
+                    server_logger.info(f'<数据>Price-{p}续订成功')
+        except Exception as e:
+            server_logger.info(f'<数据>续订数据失败')
     else:
         server_logger.error(f'<账户>{user_id.decode()}登录失败--errcode:{ret_code}--errmsg:{ret_msg.decode()}')
-    try:
-        for t in sub_ticker_list:
-            if subscribe_ticker(t, 1) == 0:
-                server_logger.info(f'<数据>Ticker-{t}续订成功')
-        for p in sub_price_list:
-            if subscribe_ticker(p, 1) == 0:
-                server_logger.info(f'<数据>Price-{p}续订成功')
-    except Exception as e:
-        server_logger.info(f'<数据>续订数据失败')
+        login_flag = False
+
 
 @on_account_login_reply  # 普通客户登入回调
 def login_reply(accNo, ret_code, ret_msg):
@@ -122,51 +127,55 @@ def price_update(price):
 @on_connecting_reply  # 连接状态改变时调用
 def connecting_reply(host_id, con_status):
     server_logger.info(f'<连接>{HOST_TYPE[host_id]}状态改变--{HOST_CON_STATUS[con_status]}')
+    # global login_flag
     if con_status >=3:
-        for i in range(3):
-            try:
-                logout()
-                time.sleep(1)
-                break
-            except Exception:
-                ...
-        for i in range(3):
-            try:
-                login()
-                server_logger.info(f'<账户>{loginfo.get(spid, "user_id")}-断线重连成功')
-                break
-            except:
-                server_logger.error(f'<账户>{loginfo.get(spid, "user_id")}-断线重连失败')
-                time.sleep(3)
-        else:
-            server_logger.info(f'<账户>{loginfo.get(spid, "user_id")}-断线重连三次失败')
+    #     for i in range(3):
+    #         try:
+    #             logout()
+    #             login_flag = False
+    #             time.sleep(1)
+    #             break
+    #         except Exception:
+    #             ...
+    #     for i in range(3):
+    #         try:
+    #             login()
+    #             server_logger.info(f'<账户>{loginfo.get(spid, "user_id")}-断线重连成功')
+    #             time.sleep(3)
+    #             if login_flag = True:
+    #                 break
+    #         except:
+    #             server_logger.error(f'<账户>{loginfo.get(spid, "user_id")}-断线重连失败')
+    #             time.sleep(3)
+    #     else:
+    #         server_logger.info(f'<账户>{loginfo.get(spid, "user_id")}-断线重连三次失败')
 
-            import smtplib
-            from email.mime.text import MIMEText
-            from email.mime.multipart import MIMEMultipart
-            from email.mime.application import MIMEApplication
-            me = "LogServer" + "<" + loginfo.get('EMAIL', 'sender') + ">"
-            msg = MIMEMultipart()
-            msg['Subject'] = 'Server邮件'
-            msg['From'] = me
-            msg['To'] = "137150224@qq.com"
+        import smtplib
+        from email.mime.text import MIMEText
+        from email.mime.multipart import MIMEMultipart
+        from email.mime.application import MIMEApplication
+        me = "LogServer" + "<" + loginfo.get('EMAIL', 'sender') + ">"
+        msg = MIMEMultipart()
+        msg['Subject'] = 'Server邮件'
+        msg['From'] = me
+        msg['To'] = "137150224@qq.com"
 
-            txt = MIMEText('断线重连失败', _subtype='plain', _charset='utf-8')
-            msg.attach(txt)
+        txt = MIMEText(f'<连接>{HOST_TYPE[host_id]}状态改变--{HOST_CON_STATUS[con_status]}', _subtype='plain', _charset='utf-8')
+        msg.attach(txt)
 
-            att = MIMEApplication(open('SP_LOG/sp_server.log', 'rb').read())
-            att.add_header('Content-Disposition', 'attachment', filename='sp_server.log')
-            msg.attach(att)
+        att = MIMEApplication(open(os.path.join('SP_LOG', 'sp_server.log'), 'rb').read())
+        att.add_header('Content-Disposition', 'attachment', filename='sp_server.log')
+        msg.attach(att)
 
-            smtp = smtplib.SMTP()
-            smtp.connect(loginfo.get('EMAIL', 'host'), loginfo.get('EMAIL', 'port'))
-            smtp.login(loginfo.get('EMAIL', 'username'), loginfo.get('EMAIL', 'password'))
-            smtp.sendmail(me, '137150224@qq.com', msg.as_string())
-            smtp.quit()
-            del smtplib
-            del MIMEText
-            del MIMEMultipart
-            del MIMEApplication
+        smtp = smtplib.SMTP()
+        smtp.connect(loginfo.get('EMAIL', 'host'), loginfo.get('EMAIL', 'port'))
+        smtp.login(loginfo.get('EMAIL', 'username'), loginfo.get('EMAIL', 'password'))
+        smtp.sendmail(me, '137150224@qq.com', msg.as_string())
+        smtp.quit()
+        del smtplib
+        del MIMEText
+        del MIMEMultipart
+        del MIMEApplication
 
 # -----------------------------------------------登入后的新信息回调------------------------------------------------------------------------------
 @on_order_request_failed  # 订单请求失败时候调用
@@ -234,12 +243,6 @@ def insert_ticker():
             server_logger.info(f'sqlerror:{e}')
             conn.ping()
 
-
-
-login()
-time.sleep(1)
-
-
 def get_price():
     while True:
         prodcode = rep_price_socket.recv_string()
@@ -273,6 +276,8 @@ def get_sub_price_list():
 
 
 if __name__ == '__main__':
+    login()
+    time.sleep(1)
     from handle_func import handle
     from inspect import isfunction
     is_login = True
@@ -293,7 +298,6 @@ if __name__ == '__main__':
         except Exception as e:
             ret = e
         return ret
-
     while True:
         if is_login:
             while True:
