@@ -63,15 +63,14 @@ sp_config = {'host': loginfo.get(spid, 'host'),
 set_login_info(**sp_config)
 insert_ticker_queue = Queue()
 
-def info_handle(type: str, info: str, obj='', handle_type=0):
-    if obj:
-        obj = pickle.dumps(obj)
+def info_handle(type: str, info: str, obj=None, handle_type=0):
+    _obj = pickle.dumps(obj)
     if handle_type == 0:  # 0为info输出，其他做error输出
         server_logger.info(type + info)
-        info_socket.send_multipart([type.encode(), info.encode(), obj])
+        info_socket.send_multipart([type.encode(), info.encode(), _obj])
     else:
         server_logger.error(type + info)
-        info_socket.send_multipart([type.encode(), info.encode(), obj])
+        info_socket.send_multipart([type.encode(), info.encode(), _obj])
 
 # -----------------------------------------------初始登录的信息回调------------------------------------------------------------------------------
 @on_login_reply  # 登录调用
