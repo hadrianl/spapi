@@ -63,7 +63,7 @@ sp_config = {'host': loginfo.get(spid, 'host'),
 set_login_info(**sp_config)
 insert_ticker_queue = Queue()
 
-def info_handle(type: str, info: str, obj=None, handle_type=0):
+def info_handle(type: str, info: str, obj='', handle_type=0):
     if obj:
         obj = pickle.dumps(obj)
     if handle_type == 0:  # 0为info输出，其他做error输出
