@@ -63,13 +63,15 @@ sp_config = {'host': loginfo.get(spid, 'host'),
 set_login_info(**sp_config)
 insert_ticker_queue = Queue()
 
-def info_handle(type: str, info: str, handle_type=0):
+def info_handle(type: str, info: str, obj=None, handle_type=0):
+    if obj:
+        obj = pickle.dumps(obj)
     if handle_type == 0:  # 0为info输出，其他做error输出
         server_logger.info(type + info)
-        info_socket.send_multipart([type.encode(), info.encode()])
+        info_socket.send_multipart([type.encode(), info.encode(), obj])
     else:
         server_logger.error(type + info)
-        info_socket.send_multipart([type.encode(), info.encode()])
+        info_socket.send_multipart([type.encode(), info.encode(), obj])
 
 # -----------------------------------------------初始登录的信息回调------------------------------------------------------------------------------
 @on_login_reply  # 登录调用
@@ -116,7 +118,7 @@ def trade_ready_push(rec_no, trade):
 
 @on_account_position_push  # 普通客户登入后返回登入前的已存在持仓信息
 def account_position_push(pos):
-    info_handle('<持仓>', f'历史持仓信息--ProdCode:{pos.ProdCode.decode()}-PLBaseCcy:{pos.PLBaseCcy}-PL:{pos.PL}-Qty:{pos.Qty}-DepQty:{pos.DepQty}')
+    info_handle('<持仓>', f'历史持仓信息--ProdCode:{pos.ProdCode.decode()}-PLBaseCcy:{pos.PLBaseCcy}-PL:{pos.PL}-Qty:{pos.Qty}-DepQty:{pos.DepQty}', pos)
 
 @on_business_date_reply  # 登录成功后会返回一个交易日期
 def business_date_reply(business_date):
@@ -190,29 +192,29 @@ def connecting_reply(host_id, con_status):
 # -----------------------------------------------登入后的新信息回调------------------------------------------------------------------------------
 @on_order_request_failed  # 订单请求失败时候调用
 def order_request_failed(action, order, err_code, err_msg):
-    info_handle('<订单>', f'请求失败--ACTION:{action}-@{order.ProdCode.decode()}-Price:{order.Price}-Qty:{order.Qty}-BuySell:{order.BuySell.decode()}      errcode;{err_code}-errmsg:{err_msg.decode()}')
+    info_handle('<订单>', f'请求失败--ACTION:{action}-@{order.ProdCode.decode()}-Price:{order.Price}-Qty:{order.Qty}-BuySell:{order.BuySell.decode()}      errcode;{err_code}-errmsg:{err_msg.decode()}', order)
 
 @on_order_before_send_report  # 订单发送前调用
 def order_before_snd_report(order):
-    info_handle('<订单>', f'即将发送请求--@{order.ProdCode.decode()}-Price:{order.Price}-Qty:{order.Qty}-BuySell:{order.BuySell.decode()}')
+    info_handle('<订单>', f'即将发送请求--@{order.ProdCode.decode()}-Price:{order.Price}-Qty:{order.Qty}-BuySell:{order.BuySell.decode()}', order)
 
 @on_trade_report  # 成交记录更新后回调出推送新的成交记录
 def trade_report(rec_no, trade):
-    info_handle('<成交>', f'{rec_no}新成交{trade.OpenClose.decode()}--@{trade.ProdCode.decode()}--{trade.BuySell.decode()}--Price:{trade.Price}--Qty:{trade.Qty}')
+    info_handle('<成交>', f'{rec_no}新成交{trade.OpenClose.decode()}--@{trade.ProdCode.decode()}--{trade.BuySell.decode()}--Price:{trade.Price}--Qty:{trade.Qty}', trade)
 
 @on_updated_account_position_push  # 新持仓信息
 def updated_account_position_push(pos):
-    info_handle('<持仓>', f'信息变动--@{pos.ProdCode.decode()}-PLBaseCcy:{pos.PLBaseCcy}-PL:{pos.PL}-Qty:{pos.Qty}-DepQty:{pos.DepQty}')
+    info_handle('<持仓>', f'信息变动--@{pos.ProdCode.decode()}-PLBaseCcy:{pos.PLBaseCcy}-PL:{pos.PL}-Qty:{pos.Qty}-DepQty:{pos.DepQty}', pos)
 
 @on_updated_account_balance_push  # 户口账户发生变更时的回调，新的账户信息
 def updated_account_balance_push(acc_bal):
-    info_handle('<结余>', f'信息变动-{acc_bal.Ccy.decode()}-CashBF:{acc_bal.CashBF}-TodayCash:{acc_bal.TodayCash}-NotYetValue:{acc_bal.NotYetValue}-Unpresented:{acc_bal.Unpresented}-TodayOut:{acc_bal.TodayOut}')
+    info_handle('<结余>', f'信息变动-{acc_bal.Ccy.decode()}-CashBF:{acc_bal.CashBF}-TodayCash:{acc_bal.TodayCash}-NotYetValue:{acc_bal.NotYetValue}-Unpresented:{acc_bal.Unpresented}-TodayOut:{acc_bal.TodayOut}', acc_bal)
 # ------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 # ------------------------------------------------------------请求回调函数------------------------------------------------------------------------------------
 @on_order_report  # 订单报告的回调推送
 def order_report(rec_no, order):
-    info_handle('<订单>', f'编号:{rec_no}-@{order.ProdCode.decode()}-Status:{ORDER_STATUS[order.Status]}')
+    info_handle('<订单>', f'编号:{rec_no}-@{order.ProdCode.decode()}-Status:{ORDER_STATUS[order.Status]}', order)
 
 @on_instrument_list_reply  # 产品系列信息的回调推送，用load_instrument_list()触发
 def inst_list_reply(req_id, is_ready, ret_msg):
@@ -288,26 +290,13 @@ def get_sub_price_list():
 if __name__ == '__main__':
     login()
     time.sleep(1)
-    from handle_func import handle
+    from handle_func import *
     from inspect import isfunction
     is_login = True
     get_price_thread = Thread(target=get_price)
     insert_ticker_thread = Thread(target=insert_ticker)
     get_price_thread.start()
     insert_ticker_thread.start()
-    def handle_str_func(_func, _args, _kwargs):
-        func = pickle.loads(_func)
-        args = pickle.loads(_args)
-        kwargs = pickle.loads(_kwargs)
-        handle = getattr(sys.modules['__main__'], func, None)
-        try:
-            if handle:
-                ret = handle(*args, **kwargs)
-            else:
-                raise Exception(f'不存在{func}')
-        except Exception as e:
-            ret = e
-        return ret
     while True:
         if is_login:
             while True:
