@@ -8,8 +8,8 @@
 import zmq
 from zmq import Context
 from threading import Thread
-from spAPI import *
-from handle_func import dumps
+from spapi.spAPI import *
+from spapi.handle_func import dumps
 
 server_IP = '192.168.2.226'
 poller = zmq.Poller()
