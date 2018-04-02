@@ -6,6 +6,7 @@
 # @License : (C) Copyright 2013-2017, 凯瑞投资
 
 import pickle
+import sys
 
 def dumps(func, *args, **kwargs):  # 序列化处理，把函数及其参数序列化
     _func = pickle.dumps(func)

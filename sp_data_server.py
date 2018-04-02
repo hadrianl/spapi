@@ -5,10 +5,8 @@
 # @File    : sp_data_server.py
 # @License : (C) Copyright 2013-2017, 凯瑞投资
 
-import os
-dirpath = os.path.dirname(__file__)  # 获取模块路径
 
-from spapi.spAPI import *
+from spAPI import *
 import zmq
 from zmq import Context
 import pymysql as pm
@@ -19,7 +17,8 @@ import logging.config
 from datetime import datetime
 from queue import Queue
 import pickle
-
+import os
+dirpath = os.path.dirname(__file__)  # 获取模块路径
 
 conf = configparser.ConfigParser()
 conf.read(os.path.join(dirpath, 'conf', 'conf.ini'))
@@ -34,6 +33,7 @@ dbconfig = {'host': conf.get('MYSQL', 'host'),
             'db': conf.get('MYSQL', 'db'),
             'cursorclass': pm.cursors.DictCursor
             }
+print(dbconfig)
 ctx = Context()
 ticker_socket = ctx.socket(zmq.PUB)
 price_socket = ctx.socket(zmq.PUB)
@@ -52,7 +52,7 @@ to_sql_list = set()
 sub_ticker_list = set()
 sub_price_list = set()
 
-spid = 'SP_ID2'
+spid = 'SP_ID1'
 initialize()
 sp_config = {'host': loginfo.get(spid, 'host'),
              'port': loginfo.getint(spid, 'port'),
