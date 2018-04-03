@@ -11,7 +11,7 @@ from threading import Thread
 from spapi.spAPI import *
 from spapi.handle_func import dumps
 
-server_IP = '192.168.2.237'
+server_IP = '192.168.2.226'
 
 
 class SpFunc:
@@ -257,8 +257,9 @@ if __name__ == '__main__':
     symbol = 'HSIJ8'
     on_tick = SubTicker(symbol)
     on_price = SubPrice(symbol)
+    spfunc = SpFunc()
     on_tick.sub()
     on_price.sub()
-    into_sql(symbol)
-    print(sub_price_list())
-    print(sub_ticker_list())
+    spfunc.into_sql(symbol)
+    print(spfunc.sub_price_list())
+    print(spfunc.sub_ticker_list())
