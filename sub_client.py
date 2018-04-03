@@ -11,7 +11,7 @@ from threading import Thread
 from spapi.spAPI import *
 from spapi.handle_func import dumps
 
-server_IP = '192.168.2.226'
+server_IP = '192.168.2.237'
 
 
 class SpFunc:
@@ -51,19 +51,19 @@ class SpFunc:
         return self._s('get_sub_price_list')
 
     def sub_ticker(self, prodcode):
-        self._s(subscribe_ticker, prodcode, 1)
+        self._s('subscribe_ticker', prodcode, 1)
 
     def unsub_ticker(self, prodcode):
-        self._s(subscribe_ticker, prodcode, 0)
+        self._s('subscribe_ticker', prodcode, 0)
 
     def sub_price(self, prodcode):
-        self._s(subscribe_price, prodcode, 1)
+        self._s('subscribe_price', prodcode, 1)
 
     def unsub_price(self, prodcode):
-        self._s(subscribe_price, prodcode, 0)
+        self._s('subscribe_price', prodcode, 0)
 
     def add_order(self, **kwargs):
-        self._s(add_order, **kwargs)
+        self._s('add_order', **kwargs)
 
 
 
