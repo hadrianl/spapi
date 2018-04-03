@@ -129,7 +129,7 @@ class SubPrice:
         self._sub_socket = self._ctx.socket(zmq.SUB)
         self._sub_socket.set_string(zmq.SUBSCRIBE, '')
         self._sub_socket.setsockopt(zmq.RCVTIMEO, 5000)
-        self._req_price_socket = ctx.socket(zmq.REQ)
+        self._req_price_socket = self._ctx.socket(zmq.REQ)
         self._req_price_socket.connect(f'tcp://{server_IP}:6870')
         self._addr = addr
         self._prodcode = prodcode
