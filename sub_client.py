@@ -17,22 +17,66 @@ ctx = Context()
 req_price_socket = ctx.socket(zmq.REQ)
 req_price_socket.connect(f'tcp://{server_IP}:6870')
 
-handle_socket = ctx.socket(zmq.REQ)
-handle_socket.setsockopt(zmq.SNDTIMEO, 1000)
-handle_socket.setsockopt(zmq.RCVTIMEO, 1000)
-handle_socket.connect(f'tcp://{server_IP}:6666')
+
+class SpFunc:
+    def __init__(self, addr = f'tcp://{server_IP}:6666'):
+        self._ctx = Context()
+        self._handle_socket = self._ctx.socket(zmq.REQ)
+        self._handle_socket.setsockopt(zmq.SNDTIMEO, 1000)
+        self._handle_socket.setsockopt(zmq.RCVTIMEO, 1000)
+        self._handle_socket.connect(addr)
+
+    def _s(self, func, *args, **kwargs):
+        self._handle_socket.send_multipart([*dumps(func, *args, **kwargs)])
+        ret = self._handle_socket.recv_pyobj()
+        if isinstance(ret, Exception):
+            raise ret
+        return ret
+
+    def Login(self):
+        self._s(login)
+
+    def Logout(self):
+        self._s(logout)
+
+    def into_sql(self, prodcode):
+        self._s('to_sql', prodcode, 1)
+
+    def outof_sql(self, prodcode):
+        self._s('to_sql', prodcode, 0)
+
+    def to_sql_list(self):
+        return self._s('get_to_sql_list')
+
+    def sub_ticker_list(self):
+        return self._s('get_sub_ticker_list')
+
+    def sub_price_list(self):
+        return self._s('get_sub_price_list')
+
+    def sub_ticker(self, prodcode):
+        self._s(subscribe_ticker, prodcode, 1)
+
+    def unsub_ticker(self, prodcode):
+        self._s(subscribe_ticker, prodcode, 0)
+
+    def sub_price(self, prodcode):
+        self._s(subscribe_price, prodcode, 1)
+
+    def unsub_price(self, prodcode):
+        self._s(subscribe_price, prodcode, 0)
+
+    def add_order(self, **kwargs):
+        self._s(add_order, **kwargs)
 
 
-def _s(func, *args, **kwargs):  # 序列化处理，把函数及其参数序列化
-    handle_socket.send_multipart([*dumps(func, *args, **kwargs)])
-    ret = handle_socket.recv_pyobj()
-    if isinstance(ret, Exception):
-        raise ret
-    return ret
+
+
 
 class SubTicker:
     def __init__(self, prodcode, addr=f'tcp://{server_IP}:6868'):
-        self._sub_socket = ctx.socket(zmq.SUB)
+        self._ctx = Context()
+        self._sub_socket = self._ctx.socket(zmq.SUB)
         self._sub_socket.set_string(zmq.SUBSCRIBE, '')
         self._sub_socket.setsockopt(zmq.RCVTIMEO, 5000)
         self._addr = addr
@@ -40,6 +84,7 @@ class SubTicker:
         self.__is_active = False
         self.__is_sub = False
         self.__thread = Thread()
+        self._spfunc = SpFunc()
 
     def __run(self, func):
         while self.__is_active:
@@ -72,26 +117,30 @@ class SubTicker:
 
 
     def sub(self):
-        _s(subscribe_ticker, self._prodcode, 1)
+        self._spfunc.sub_ticker(self._prodcode)
         self.__is_sub = True
 
 
     def unsub(self):
-        _s(subscribe_ticker, self._prodcode, 0)
+        self._spfunc.unsub_ticker(self._prodcode)
         self.__is_sub = False
 
 
 
 class SubPrice:
     def __init__(self, prodcode, addr=f'tcp://{server_IP}:6869'):
-        self._sub_socket = ctx.socket(zmq.SUB)
+        self._ctx = Context()
+        self._sub_socket = self._ctx.socket(zmq.SUB)
         self._sub_socket.set_string(zmq.SUBSCRIBE, '')
         self._sub_socket.setsockopt(zmq.RCVTIMEO, 5000)
+        self._req_price_socket = ctx.socket(zmq.REQ)
+        self._req_price_socket.connect(f'tcp://{server_IP}:6870')
         self._addr = addr
         self._prodcode = prodcode
         self.__is_active = False
         self.__is_sub = False
         self.__thread = Thread()
+        self._spfunc = SpFunc()
 
     def __run(self, func):
         while self.__is_active:
@@ -122,11 +171,11 @@ class SubPrice:
         return self.__is_active
 
     def sub(self):
-        _s(subscribe_price, self._prodcode, 1)
+        self._spfunc.sub_price(self._prodcode)
         self.__is_sub = True
 
     def unsub(self):
-        _s(subscribe_price, self._prodcode, 0)
+        self._spfunc.unsub_price(self._prodcode)
         self.__is_sub = False
 
     def get_price(self):
@@ -135,53 +184,32 @@ class SubPrice:
         return price
 
 
-def Login():
-    _s(login)
-
-
-def Logout():
-    _s(logout)
-
-
-def Add_normal_order(ProdCode, BuySell, Qty, Price=None, AO=False, OrderOption=0, ClOrderId='', ):
-    CondType = 0
-    price_map = {0: Price, 2: 0x7fffffff, 6: 0}
-    if Price:
-        assert isinstance(Price, (int, float))
-        OrderType = 0
-        Price = price_map[OrderType]
-    elif AO:
-        OrderType = 2
-        Price = price_map[OrderType]
-    else:
-        OrderType = 6
-        Price = price_map[OrderType]
-    kwargs={'ProdCode': ProdCode,
-            'BuySell': BuySell,
-            'Qty': Qty,
-            'Price': Price,
-            'CondType': CondType,
-            'OrderType': OrderType,
-            'OrderOption': OrderOption,
-            'ClOrderId': ClOrderId}
-    return _s(add_order, **kwargs)
+#
+# def Add_normal_order(ProdCode, BuySell, Qty, Price=None, AO=False, OrderOption=0, ClOrderId='', ):
+#     CondType = 0
+#     price_map = {0: Price, 2: 0x7fffffff, 6: 0}
+#     if Price:
+#         assert isinstance(Price, (int, float))
+#         OrderType = 0
+#         Price = price_map[OrderType]
+#     elif AO:
+#         OrderType = 2
+#         Price = price_map[OrderType]
+#     else:
+#         OrderType = 6
+#         Price = price_map[OrderType]
+#     kwargs={'ProdCode': ProdCode,
+#             'BuySell': BuySell,
+#             'Qty': Qty,
+#             'Price': Price,
+#             'CondType': CondType,
+#             'OrderType': OrderType,
+#             'OrderOption': OrderOption,
+#             'ClOrderId': ClOrderId}
+#     return _s(add_order, **kwargs)
 
 # def Get_
 
-def into_sql(prodcode):
-    _s('to_sql', prodcode, 1)
-
-def outof_sql(prodcode):
-    _s('to_sql', prodcode, 0)
-
-def to_sql_list():
-    return _s('get_to_sql_list')
-
-def sub_ticker_list():
-    return _s('get_sub_ticker_list')
-
-def sub_price_list():
-    return _s('get_sub_price_list')
 
 # def check_thread_alive():
 #     """
