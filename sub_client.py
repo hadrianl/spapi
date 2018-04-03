@@ -12,10 +12,6 @@ from spapi.spAPI import *
 from spapi.handle_func import dumps
 
 server_IP = '192.168.2.226'
-poller = zmq.Poller()
-ctx = Context()
-req_price_socket = ctx.socket(zmq.REQ)
-req_price_socket.connect(f'tcp://{server_IP}:6870')
 
 
 class SpFunc:
@@ -179,8 +175,8 @@ class SubPrice:
         self.__is_sub = False
 
     def get_price(self):
-        req_price_socket.send_string(self._prodcode)
-        price = req_price_socket.recv_pyobj()
+        self._req_price_socket.send_string(self._prodcode)
+        price = self._req_price_socket.recv_pyobj()
         return price
 
 
