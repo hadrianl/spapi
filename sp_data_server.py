@@ -16,7 +16,6 @@ import configparser
 import logging.config
 from datetime import datetime
 from queue import Queue
-import pickle
 import os
 dirpath = os.path.dirname(__file__)  # 获取模块路径
 
@@ -319,6 +318,18 @@ if __name__ == '__main__':
 
                 elif isinstance(func, str):
                     ret = handle_str_func(_func, _args, _kwargs)
+                    if func == 'subscribe_ticker':
+                        prodcode, mode = pickle.loads(_args)
+                        if mode == 1:
+                            sub_ticker_list.add(prodcode)
+                        else:
+                            sub_ticker_list.remove(prodcode)
+                    elif func == 'subscribe_price':
+                        prodcode, mode = pickle.loads(_args)
+                        if mode == 1:
+                            sub_price_list.add(prodcode)
+                        else:
+                            sub_price_list.remove(prodcode)
 
                 rep_socket.send_pyobj(ret)
 
