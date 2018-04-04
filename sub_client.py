@@ -29,10 +29,10 @@ class SpFunc:
         return ret
 
     def Login(self):
-        self._s(login)
+        self._s('login')
 
     def Logout(self):
-        self._s(logout)
+        self._s('logout')
 
     def into_sql(self, prodcode):
         self._s('to_sql', prodcode, 1)
