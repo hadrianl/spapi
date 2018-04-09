@@ -53,7 +53,7 @@ to_sql_list = set()
 sub_ticker_list = set()
 sub_price_list = set()
 
-spid = 'SP_ID1'
+spid = 'SP_ID2'
 initialize()
 sp_config = {'host': loginfo.get(spid, 'host'),
              'port': loginfo.getint(spid, 'port'),
