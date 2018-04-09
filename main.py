@@ -13,7 +13,7 @@ import configparser
 
 loginfo = configparser.ConfigParser()
 loginfo.read(r'conf\loginfo.ini')
-spid = 'SP_ID2'
+spid = 'SP_ID1'
 initialize()
 sp_config = {'host': loginfo.get(spid, 'host'),
              'port': loginfo.getint(spid, 'port'),

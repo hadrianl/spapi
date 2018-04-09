@@ -52,7 +52,7 @@ to_sql_list = set()
 sub_ticker_list = set()
 sub_price_list = set()
 
-spid = 'SP_ID1'
+spid = 'SP_ID2'
 initialize()
 sp_config = {'host': loginfo.get(spid, 'host'),
              'port': loginfo.getint(spid, 'port'),
@@ -230,7 +230,7 @@ def product_list_by_code_reply(req_id, inst_code, is_ready, ret_msg):
         else:
             info_handle('<合约>', f'产品:{inst_code.decode()}合约信息加载成功      req_id:{req_id}-msg:{ret_msg.decode()}')
     else:
-        info_handle('<合约>', f'产品:{inst_code.decode()}合约信息正在加载......req_id{req_id}-msg:{ret_msg.decode()}')
+        info_handle('<合约>', f'产品:{inst_code.decode()}合约信息正在加载......req_id:{req_id}-msg:{ret_msg.decode()}')
 
 @on_pswchange_reply  # 修改密码调用
 def pswchange_reply(ret_code, ret_msg):

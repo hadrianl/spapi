@@ -214,17 +214,17 @@ class SPApiAccInfo(Structure):
 
 
 class SPApiProduct(Structure):
-    _fields_ = [('ProdCode', c_char * 16),
-                ('ProdType', c_char),
-                ('ProdName', c_char * 40),
-                ('Underlying', c_char * 16),
-                ('InstCode', c_char * 16),
-                ('ExpiryDate', c_uint32),
-                ('CallPut', c_char),
-                ('Strike', c_int32),
-                ('LotSize', c_int32),
-                ('ProdName1', c_char * 40),
-                ('ProdName2', c_char * 40),
-                ('OptStyle', c_char),
-                ('TickSize', c_int32),
+    _fields_ = [('ProdCode', c_char * 16),  # 产品代码
+                ('ProdType', c_char),  # 产品类型
+                ('ProdName', c_char * 40),  # 产品英文名
+                ('Underlying', c_char * 16),  # 关联的期货合约
+                ('InstCode', c_char * 16),  # 产品系列名称
+                ('ExpiryDate', c_uint32),  # 产品到期日
+                ('CallPut', c_char),  # 期权方向认购与认沽
+                ('Strike', c_int32),  # 期权行使价
+                ('LotSize', c_int32),  # 手数
+                ('ProdName1', c_char * 40),  # 产品繁体名称
+                ('ProdName2', c_char * 40),  # 产品简体名称
+                ('OptStyle', c_char),  # 期权类型
+                ('TickSize', c_int32),  # 产品价格最小变动位数
                 ]
