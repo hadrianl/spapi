@@ -33,7 +33,6 @@ dbconfig = {'host': conf.get('MYSQL', 'host'),
             'db': conf.get('MYSQL', 'db'),
             'cursorclass': pm.cursors.DictCursor
             }
-print(dbconfig)
 ctx = Context()
 ticker_socket = ctx.socket(zmq.PUB)
 price_socket = ctx.socket(zmq.PUB)
@@ -45,6 +44,8 @@ price_socket.bind(f'tcp://*: {conf.getint("SOCKET_PORT", "price_pub")}')
 info_socket.bind(f'tcp://*: {conf.getint("SOCKET_PORT", "info_pub")}')
 rep_price_socket.bind(f'tcp://*: {conf.getint("SOCKET_PORT", "price_rep")}')
 rep_socket.bind(f'tcp://*: {conf.getint("SOCKET_PORT", "handle_rep")}')
+rep_socket.setsockopt(zmq.SNDTIMEO, 5000)
+rep_socket.setsockopt(zmq.RCVTIMEO, 5000)
 conn = pm.connect(**dbconfig)
 cursor = conn.cursor()
 login_flag = False
@@ -52,7 +53,7 @@ to_sql_list = set()
 sub_ticker_list = set()
 sub_price_list = set()
 
-spid = 'SP_ID2'
+spid = 'SP_ID1'
 initialize()
 sp_config = {'host': loginfo.get(spid, 'host'),
              'port': loginfo.getint(spid, 'port'),
@@ -299,7 +300,10 @@ if __name__ == '__main__':
     while True:
         if is_login:
             while True:
-                _func, _args, _kwargs = rep_socket.recv_multipart()
+                try:
+                    _func, _args, _kwargs = rep_socket.recv_multipart()
+                except zmq.ZMQError:
+                    break
                 func = pickle.loads(_func)
 
                 if isfunction(func):
@@ -331,8 +335,10 @@ if __name__ == '__main__':
                             sub_price_list.add(prodcode)
                         else:
                             sub_price_list.remove(prodcode)
-
-                rep_socket.send_pyobj(ret)
+                try:
+                    rep_socket.send_pyobj(ret)
+                except zmq.ZMQError:
+                    break
 
 
 

@@ -17,8 +17,8 @@ class SpFunc:
     def __init__(self, addr = f'tcp://{server_IP}:6666'):
         self._ctx = Context()
         self._handle_socket = self._ctx.socket(zmq.REQ)
-        self._handle_socket.setsockopt(zmq.SNDTIMEO, 1000)
-        self._handle_socket.setsockopt(zmq.RCVTIMEO, 1000)
+        self._handle_socket.setsockopt(zmq.SNDTIMEO, 5000)
+        self._handle_socket.setsockopt(zmq.RCVTIMEO, 5000)
         self._handle_socket.connect(addr)
 
     def _s(self, func, *args, **kwargs):
