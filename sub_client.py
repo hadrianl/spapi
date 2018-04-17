@@ -64,8 +64,20 @@ class SpFunc:
     def add_order(self, **kwargs):
         self._s('add_order', **kwargs)
 
+    def get_orders_by_array(self):
+        return self._s('get_orders_by_array')
 
+    def get_all_pos_by_array(self):
+        return self._s('get_all_pos_by_array')
 
+    def get_all_trades_by_array(self):
+        return self._s('get_all_trades_by_array')
+
+    def get_all_accbal_by_array(self):
+        return self._s('get_all_accbal_by_array')
+
+    def get_ccy_rate_by_ccy(self, ccy):
+        return self._s('get_ccy_rate_by_ccy', ccy)
 
 
 class SubTicker:
