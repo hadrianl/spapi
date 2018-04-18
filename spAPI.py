@@ -261,7 +261,7 @@ def get_orders_by_array():
     ret =spdll.SPAPI_GetOrdersByArray(c_char_p_user_id, c_char_p_user_id, byref(orders_list))
     if ret == 0:
         api_logger.info(f'<订单>获取所有列表成功')
-        return orders_list
+        return [order for order in orders_list]
     else:
         api_logger.error(f'<订单>获取所有列表失败      errcode:{ret}')
         raise Exception(f'<订单>获取所有列表失败      errcode:{ret}')
@@ -372,7 +372,7 @@ def get_all_pos_by_array():
     ret = spdll.SPAPI_GetAllPosByArray(c_char_p_user_id, byref(all_pos))
     if ret == 0:
         api_logger.info('<持仓>获取全部信息列表成功')
-        return all_pos
+        return [pos for pos in all_pos]
     else:
         api_logger.error(f'<持仓>获取全部信息列表失败      errcode:{ret}')
         raise Exception(f'<持仓>获取全部信息列表失败      errcode:{ret}')
@@ -412,7 +412,7 @@ def get_all_trades_by_array():
     ret = spdll.SPAPI_GetAllTrades(c_char_p_user_id, c_char_p_user_id, byref(all_trades))
     if ret == 0:
         api_logger.info(f'<成交>获取信息列表成功')
-        return all_trades
+        return [trade for trade in all_trades]
     else:
         api_logger.error(f'<成交>获取信息列表失败      errcode:{ret}')
         raise Exception(f'<成交>获取信息列表失败      errcode:{ret}')
@@ -474,7 +474,7 @@ def get_instrument_by_array():
     ret = spdll.SPAPI_GetInstrumentByArray(byref(inst_list))
     if ret == 0:
         api_logger.info('<产品>获取所有市场产品系列信息成功')
-        return inst_list
+        return [inst for inst in inst_list]
     else:
         api_logger.error(f'<产品>获取所有市场产品系列信息失败      errcode:{ret}')
         raise Exception(f'<产品>获取所有市场产品系列信息失败      errcode:{ret}')
@@ -514,7 +514,7 @@ def get_product_by_array():
     ret = spdll.SPAPI_GetProductByArray(byref(prod_list))
     if ret == 0 :
         api_logger.info('<合约>获取所有已加载的合约信息成功')
-        return prod_list
+        return [prod for prod in prod_list]
     else:
         api_logger.info(f'<合约>获取所有已加载的合约信息失败      errcode:{ret}')
         raise Exception(f'<合约>获取所有已加载的合约信息失败      errcode:{ret}')
@@ -556,7 +556,7 @@ def get_all_accbal_by_array():
     ret = spdll.SPAPI_GetAllAccBalByArray(c_char_p_user_id, byref(all_accbal))
     if ret == 0:
         api_logger.info('<结余>获取账户全部现金结余信息成功')
-        return all_accbal
+        return [accbal for accbal in all_accbal]
     else:
         api_logger.error(f'<结余>获取账户全部现金结余信息失败      errcode:{ret}')
         raise Exception(f'<结余>获取账户全部现金结余信息失败      errcode:{ret}')
