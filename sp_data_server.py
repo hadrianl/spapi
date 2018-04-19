@@ -114,7 +114,7 @@ def account_info_push(acc_info):
 
 @on_load_trade_ready_push  # 登入后，登入前已存的成交信息推送
 def trade_ready_push(rec_no, trade):
-    info_handle('<成交>', f'历史成交记录--NO:{rec_no}--{trade.OpenClose.decode()}成交@{trade.ProdCode.decode()}--{trade.BuySell.decode()}--Price:{trade.Price}--Qty:{trade.Qty}')
+    info_handle('<成交>', f'历史成交记录--NO:{rec_no}--{trade.OpenClose.decode()}成交@{trade.ProdCode.decode()}--{trade.BuySell.decode()}--Price:{trade.AvgPrice}--Qty:{trade.Qty}')
 
 @on_account_position_push  # 普通客户登入后返回登入前的已存在持仓信息
 def account_position_push(pos):
