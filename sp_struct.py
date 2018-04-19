@@ -87,7 +87,7 @@ class SPApiPos(Structure):
 
 
 class SPApiTrade(Structure):
-    _fields_ = [('RecNO', c_int),  # 成交记录
+    _fields_ = [('RecNO', c_double),  # 成交记录
                 ('Price', c_double),  # 成交价格
                 ('AvgPrice', c_double),  # 成交均价
                 ('TradeNo', c_longlong),  # 成交编号
