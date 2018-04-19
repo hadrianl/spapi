@@ -24,7 +24,7 @@ class SPApiOrder(Structure):
                 ('ValidTime', c_uint32),  # 有效时间
                 ('SchedTime', c_uint32),  # 预订发送时间
                 ('TimeStamp', c_uint32),  # 服务器接收订单时间
-                ('OrderOptions', c_ulong),  # 0=默认,1=T+1
+                ('OrderOptions', c_int),  # 0=默认,1=T+1
                 ('AccNo', c_char * 16),  # 用户帐号
                 ('ProdCode', c_char * 16),  # 合约代号
                 ('Initiator', c_char * 16),  # 下单用户
@@ -87,7 +87,7 @@ class SPApiPos(Structure):
 
 
 class SPApiTrade(Structure):
-    _fields_ = [('RecNO', c_double),  # 成交记录
+    _fields_ = [('RecNO', c_int),  # 成交记录
                 ('Price', c_double),  # 成交价格
                 ('AvgPrice', c_double),  # 成交均价
                 ('TradeNo', c_longlong),  # 成交编号
