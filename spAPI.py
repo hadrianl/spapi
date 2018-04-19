@@ -409,7 +409,7 @@ def get_trade_count():
 
 def get_all_trades_by_array():
     all_trades = (SPApiTrade * get_trade_count())()
-    ret = spdll.SPAPI_GetAllTrades(c_char_p_user_id, c_char_p_user_id, byref(all_trades))
+    ret = spdll.SPAPI_GetAllTradesByArray(c_char_p_user_id, c_char_p_user_id, byref(all_trades))
     if ret == 0:
         api_logger.info(f'<成交>获取信息列表成功')
         return [trade for trade in all_trades]

@@ -87,7 +87,7 @@ class SPApiPos(Structure):
 
 
 class SPApiTrade(Structure):
-    _fields_ = [('RecNO', c_int64),  # 成交记录
+    _fields_ = [('RecNO', c_double),  # 成交记录
                 ('Price', c_double),  # 成交价格
                 ('AvgPrice', c_double),  # 成交均价
                 ('TradeNo', c_longlong),  # 成交编号
@@ -107,12 +107,12 @@ class SPApiTrade(Structure):
                 ('OpenClose', c_char),  # 开平仓
                 ('Status', c_char),  # 状态
                 ('DecInPrice', c_char),  # 小数位
-                # ('OrderPrice', c_double),
-                # ('TradeRef', c_char * 40),
-                # ('TotalQty', c_int32),
-                # ('RemainingQty', c_int32),
-                # ('TradedQty', c_int32),
-                # ('AvgTradedPrice', c_double),
+                ('OrderPrice', c_double),
+                ('TradeRef', c_char * 40),
+                ('TotalQty', c_int32),
+                ('RemainingQty', c_int32),
+                ('TradedQty', c_int32),
+                ('AvgTradedPrice', c_double),
                 ]
 
 
