@@ -107,12 +107,12 @@ class SPApiTrade(Structure):
                 ('OpenClose', c_char),  # 开平仓
                 ('Status', c_char),  # 状态
                 ('DecInPrice', c_char),  # 小数位
-                ('OrderPrice', c_double),
-                ('TradeRef', c_char * 40),
-                ('TotalQty', c_int32),
-                ('RemainingQty', c_int32),
-                ('TradedQty', c_int32),
-                ('AvgTradedPrice', c_double),
+                # ('OrderPrice', c_double),
+                # ('TradeRef', c_char * 40),
+                # ('TotalQty', c_int32),
+                # ('RemainingQty', c_int32),
+                # ('TradedQty', c_int32),
+                # ('AvgTradedPrice', c_double),
                 ]
 
 
