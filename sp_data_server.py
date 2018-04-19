@@ -200,7 +200,7 @@ def order_before_snd_report(order):
 
 @on_trade_report  # 成交记录更新后回调出推送新的成交记录
 def trade_report(rec_no, trade):
-    info_handle('<成交>', f'{rec_no}新成交{trade.OpenClose.decode()}--@{trade.ProdCode.decode()}--{trade.BuySell.decode()}--Price:{trade.Price}--Qty:{trade.Qty}', trade)
+    info_handle('<成交>', f'{rec_no}新成交{trade.OpenClose.decode()}--@{trade.ProdCode.decode()}--{trade.BuySell.decode()}--Price:{trade.AvgPrice}--Qty:{trade.Qty}', trade)
 
 @on_updated_account_position_push  # 新持仓信息
 def updated_account_position_push(pos):
