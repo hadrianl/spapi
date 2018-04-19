@@ -35,12 +35,12 @@ class SPApiOrder(Structure):
                 ('BuySell', c_char),  # 买卖方向
                 ('StopType', c_char),  # 止损类型
                 ('OpenClose', c_char),  # 开平仓
-                ('CondType', c_char),  # 订单条件类型
-                ('OrderType', c_char),  # 订单类型
-                ('ValidType', c_char),  # 订单有效类型
-                ('Status', c_char),  # 状态
-                ('DecInPrice', c_char),  # 合约小数位
-                ('OrderAction', c_char),
+                ('CondType', c_int8),  # 订单条件类型
+                ('OrderType', c_int8),  # 订单类型
+                ('ValidType', c_int8),  # 订单有效类型
+                ('Status', c_int8),  # 状态
+                ('DecInPrice', c_int8),  # 合约小数位
+                ('OrderAction', c_int8),
                 ('updateTime', c_uint32),
                 ('updateSeqNo', c_int32)
                 ]
@@ -61,9 +61,9 @@ class SPApiMMOrder(Structure):
                 ('AccNp', c_char * 16),  # 用户帐号
                 ('C1OrderId', c_char * 40),  # 用户自定义参考
                 ('OrigC1OrderId', c_char * 40),  # 旧用户自定义参考
-                ('OrderType', c_char),  # 订单类型
-                ('ValidType', c_char),  # 订单有效类型
-                ('DecInPrice', c_char)  # 合约小数位
+                ('OrderType', c_int8),  # 订单类型
+                ('ValidType', c_int8),  # 订单有效类型
+                ('DecInPrice', c_int8)  # 合约小数位
                 ]
 
 
@@ -82,7 +82,7 @@ class SPApiPos(Structure):
                 ('AccNo', c_char * 16),  # 用户帐号
                 ('ProdCode', c_char * 16),  # 合约代码
                 ('LongShort', c_char),  # 上日持仓长短方向
-                ('DecInPrice', c_char),  # 合约小数点
+                ('DecInPrice', c_int8),  # 合约小数点
                 ]
 
 
@@ -105,8 +105,8 @@ class SPApiTrade(Structure):
                 ('C1OrderId', c_char * 40),  # 用户自定义参考
                 ('BuySell', c_char),  # 买卖方向
                 ('OpenClose', c_char),  # 开平仓
-                ('Status', c_char),  # 状态
-                ('DecInPrice', c_char),  # 小数位
+                ('Status', c_int8),  # 状态
+                ('DecInPrice', c_int8),  # 小数位
                 ('OrderPrice', c_double),
                 ('TradeRef', c_char * 40),
                 ('TotalQty', c_int32),
@@ -137,7 +137,7 @@ class SPApiPrice(Structure):
                 ('OpenInt', c_int32),  # 未平仓
                 ('ProdCode', c_char * 16),  # 合约代码
                 ('ProdName', c_char * 40),  # 合约名称
-                ('DecInPrice', c_char),  # 合约小数位
+                ('DecInPrice', c_int8),  # 合约小数位
                 ('ExstateNo', c_int32),  # 港期市场状态
                 ('TradeStateNo', c_int32),  # 市场状态
                 ('Suspend', c_bool),  # 是否停牌
@@ -156,7 +156,7 @@ class SPApiInstrument(Structure):
                 ('InstName1', c_char * 40),  # 繁体名称
                 ('InstName2', c_char * 40),  # 简体名称
                 ('Ccy', c_char * 4),  # 产品系列的交易币种
-                ('DecInPrice', c_char),  # 产品系列的小数位
+                ('DecInPrice', c_int8),  # 产品系列的小数位
                 ('InstType', c_char),  # 产品系列的类型
                 ]
 
@@ -177,7 +177,7 @@ class SPApiTicker(Structure):
                 ('TickerTime', c_uint32),  # 时间
                 ('DealSrc', c_int32),  # 来源
                 ('ProdCode', c_char * 16),  # 合约代码
-                ('DecInPrice', c_char)  # 小数位
+                ('DecInPrice', c_int8)  # 小数位
                 ]
 
 
