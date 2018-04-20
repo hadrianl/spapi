@@ -290,7 +290,7 @@ def delete_all_orders():
         raise Exception(f'<订单>删除全部订单失败      errcode:{ret}')
 
 def activate_order_by(accOrderNo):
-    ret = spdll.SPAPI_ActiveateOrderBy(c_char_p_user_id, c_char_p_user_id, c_long(accOrderNo))
+    ret = spdll.SPAPI_ActivateOrderBy(c_char_p_user_id, c_char_p_user_id, c_long(accOrderNo))
     if ret == 0:
         api_logger.info(f'<订单>设置#{accOrderNo}为有效订单成功')
         return ret
@@ -300,7 +300,7 @@ def activate_order_by(accOrderNo):
 
 
 def activate_all_orders():
-    ret = spdll.SPAPI_ActiveateAllOrders(c_char_p_user_id, c_char_p_user_id)
+    ret = spdll.SPAPI_ActivateAllOrders(c_char_p_user_id, c_char_p_user_id)
     if ret == 0:
         api_logger.info('<订单>设置全部为有效订单成功')
         return ret
@@ -320,7 +320,7 @@ def inactivate_order_by(accOrderNo):
 
 
 def inactivate_all_orders():
-    ret = spdll.SPAPI_InactiveateAllOrders(c_char_p_user_id, c_char_p_user_id)
+    ret = spdll.SPAPI_InactivateAllOrders(c_char_p_user_id, c_char_p_user_id)
     if ret == 0:
         api_logger.info('<订单>设置全部为无效订单成功')
         return ret
