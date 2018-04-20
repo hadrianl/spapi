@@ -111,7 +111,7 @@ def login():
         api_logger.info(f'<连接>发送{c_char_p_user_id.value.decode()}登录请求')
         return ret
     else:
-        api_logger.error(f'<连接>{发送 c_char_p_user_id.value.decode}登录请求错误,errcode:{ret}')
+        api_logger.error(f'<连接>发送{c_char_p_user_id.value.decode}登录请求错误,errcode:{ret}')
         raise Exception(f'<连接>发送{c_char_p_user_id.value.decode}登录请求错误,errcode:{ret}')
 
 
@@ -126,7 +126,7 @@ def logout():
         api_logger.info(f'<连接>发送{c_char_p_user_id.value.decode()}登出请求')
         return ret
     else:
-        api_logger.error(f'<连接发送>{c_char_p_user_id.value.decode()}登出请求错误,errcode:{ret}')
+        api_logger.error(f'<连接>发送{c_char_p_user_id.value.decode()}登出请求错误,errcode:{ret}')
         raise Exception(f'<连接>发送{c_char_p_user_id.value.decode}登录请求错误,errcode:{ret}')
 
 
@@ -240,11 +240,11 @@ def get_order_by_orderNo(order_no):
 def get_order_count():
     ret = spdll.SPAPI_GetOrderCount(c_char_p_user_id, c_char_p_user_id)
     if ret >= 0:
-        api_logger.info(f'<订单>数量获取成功')
+        api_logger.info(f'<订单>获取数量成功')
         return ret
     else:
-        api_logger.error(f'<订单>数量获取失败,errcode:{ret}')
-        raise Exception(f'<订单>数量获取失败,errcode:{ret}')
+        api_logger.error(f'<订单>获取数量失败,errcode:{ret}')
+        raise Exception(f'<订单>获取数量失败,errcode:{ret}')
 
 
 # def get_active_order():
