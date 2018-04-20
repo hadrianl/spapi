@@ -29,11 +29,11 @@ def initialize():
     """
     ret = spdll.SPAPI_Initialize()
     if ret == 0:
-        api_logger.info('<API>初始化成功')
+        api_logger.info('<API>初始化')
         return ret
     else:
-        api_logger.error(f'<API>初始化失败,errcode:{ret}')
-        raise Exception(f'<API>初始化失败,errcode:{ret}')
+        api_logger.error(f'<API>初始化错误,errcode:{ret}')
+        raise Exception(f'<API>初始化错误,errcode:{ret}')
 
 
 def unintialize():
@@ -45,11 +45,11 @@ def unintialize():
     """
     ret = spdll.SPAPI_Uninitialize()
     if ret == 0:
-        api_logger.info('<API>释放成功')
+        api_logger.info('<API>释放')
         return ret
     else:
-        api_logger.error(f'<API>释放失败,errcode:{ret},err:{RET_CODE_MSG_UNINIT[ret]}')
-        raise Exception(f'<API>释放失败,errcode:{ret},err:{RET_CODE_MSG_UNINIT[ret]}')
+        api_logger.error(f'<API>释放错误,errcode:{ret},err:{RET_CODE_MSG_UNINIT[ret]}')
+        raise Exception(f'<API>释放错误,errcode:{ret},err:{RET_CODE_MSG_UNINIT[ret]}')
 
 
 def set_language(langid: int):
@@ -62,11 +62,11 @@ def set_language(langid: int):
     LANG = {0: '英', 1: '繁', 2: '简'}
     ret = spdll.SPAPI_SetLanguageId(c_int(langid))
     if ret == 0:
-        api_logger.info(f'<语言>{LANG[langid]}-设置成功')
+        api_logger.info(f'<语言>设置{LANG[langid]}')
         return ret
     else:
-        api_logger.error(f'<语言>{LANG[langid]}-设置失败      errcode:{ret}')
-        raise Exception(f'<语言>{LANG[langid]}-设置失败      errcode:{ret}')
+        api_logger.error(f'<语言>设置{LANG[langid]}错误,errcode:{ret}')
+        raise Exception(f'<语言>设置{LANG[langid]}错误,errcode:{ret}')
 
 
 c_char_p_host = c_char_p()
@@ -108,11 +108,11 @@ def login():
     """
     ret = spdll.SPAPI_Login()
     if ret == 0:
-        api_logger.info(f'<连接>{c_char_p_user_id.value.decode()}登录请求发送成功')
+        api_logger.info(f'<连接>发送{c_char_p_user_id.value.decode()}登录请求')
         return ret
     else:
-        api_logger.error(f'<连接>{c_char_p_user_id.value.decode}登录请求发送失败      errcode:{ret}')
-        raise Exception(f'<连接>{c_char_p_user_id.value.decode}登录请求发送失败      errcode:{ret}')
+        api_logger.error(f'<连接>{发送 c_char_p_user_id.value.decode}登录请求错误,errcode:{ret}')
+        raise Exception(f'<连接>发送{c_char_p_user_id.value.decode}登录请求错误,errcode:{ret}')
 
 
 def logout():
@@ -123,11 +123,11 @@ def logout():
 
     ret = spdll.SPAPI_Logout(c_char_p_user_id)
     if ret == 0:
-        api_logger.info(f'<连接>{c_char_p_user_id.value.decode()}登出请求发送成功')
+        api_logger.info(f'<连接>发送{c_char_p_user_id.value.decode()}登出请求')
         return ret
     else:
-        api_logger.error(f'<连接>{c_char_p_user_id.value.decode()}登出请求发送失败      errcode:{ret}')
-        raise Exception(f'<连接>{c_char_p_user_id.value.decode}登录请求发送失败      errcode:{ret}')
+        api_logger.error(f'<连接发送>{c_char_p_user_id.value.decode()}登出请求错误,errcode:{ret}')
+        raise Exception(f'<连接>发送{c_char_p_user_id.value.decode}登录请求错误,errcode:{ret}')
 
 
 def change_password(old_psw, new_psw):
@@ -139,11 +139,11 @@ def change_password(old_psw, new_psw):
     """
     ret = spdll.SPAPI_Logout(c_char_p_user_id, c_char_p(old_psw), c_char_p(new_psw))
     if ret == 0:
-        api_logger.info(f'<密码>{c_char_p_user_id.value.decode()}修改请求发送成功')
+        api_logger.info(f'<密码>发送{c_char_p_user_id.value.decode()}修改请求')
         return ret
     else:
-        api_logger.error(f'<密码>{c_char_p_user_id.value.decode()}修改请求发送失败,errcode:{ret}')
-        raise Exception(f'<密码>{c_char_p_user_id.value.decode()}修改请求发送失败,errcode:{ret}')
+        api_logger.error(f'<密码>发送{c_char_p_user_id.value.decode()}修改请求错误,errcode:{ret}')
+        raise Exception(f'<密码>发送{c_char_p_user_id.value.decode()}修改请求错误,errcode:{ret}')
 
 
 def get_login_status(host_id):
@@ -157,11 +157,11 @@ def get_login_status(host_id):
 
     ret = spdll.SPAPI_GetLoginStatus(c_char_p_user_id, c_short(host_id))
     if ret in RET_CODE_MSG_LOGIN_STATUS:
-        api_logger.info(f'<连接>获取{HOST_TYPE[host_id]}状态成功-{RET_CODE_MSG_LOGIN_STATUS[ret]}')
+        api_logger.info(f'<连接>获取{HOST_TYPE[host_id]}状态-{RET_CODE_MSG_LOGIN_STATUS[ret]}')
         return ret
     else:
-        api_logger.error(f'<连接>获取{HOST_TYPE[host_id]}状态失败      errcode:{ret}')
-        raise Exception(f'<连接>获取{HOST_TYPE[host_id]}状态失败      errcode:{ret}')
+        api_logger.error(f'<连接>获取{HOST_TYPE[host_id]}状态错误,errcode:{ret}')
+        raise Exception(f'<连接>获取{HOST_TYPE[host_id]}状态错误,errcode:{ret}')
 
 
 def add_order(**kwargs):
@@ -176,11 +176,11 @@ def add_order(**kwargs):
 
     ret = spdll.SPAPI_AddOrder(byref(order))
     if ret == 0:
-        api_logger.info(f'<订单>发送成功')
+        api_logger.info(f'<订单>发送')
         return ret
     else:
-        api_logger.error(f'<订单>发送失败      errcode:{ret}-errmsg:{RET_CODE_MSG_ORDER[ret]}')
-        raise Exception(f'<订单>发送失败      errcode:{ret}-err:{RET_CODE_MSG_ORDER[ret]}')
+        api_logger.error(f'<订单>发送错误,errcode:{ret}-errmsg:{RET_CODE_MSG_ORDER[ret]}')
+        raise Exception(f'<订单>发送错误,errcode:{ret}-err:{RET_CODE_MSG_ORDER[ret]}')
 
 
 def add_inactive_order(**kwargs):
@@ -195,20 +195,20 @@ def add_inactive_order(**kwargs):
 
     ret = spdll.SPAPI_AddOrder(byref(order))
     if ret == 0:
-        api_logger.info(f'<订单>添加无效订单成功')
+        api_logger.info(f'<订单>添加无效订单')
         return order
     else:
-        api_logger.error(f'<订单>添加无效订单失败      errcode:{ret}-errmsg:{RET_CODE_MSG_ORDER[ret]}')
-        raise Exception(f'<订单>添加无效订单失败      errcode:{ret}-errmsg:{RET_CODE_MSG_ORDER[ret]}')
+        api_logger.error(f'<订单>添加无效订单错误,errcode:{ret}-errmsg:{RET_CODE_MSG_ORDER[ret]}')
+        raise Exception(f'<订单>添加无效订单错误,errcode:{ret}-errmsg:{RET_CODE_MSG_ORDER[ret]}')
 
 def change_order(order, org_price, org_qty):
     ret = spdll.SPAPI_ChangeOrder(c_char_p_user_id, pointer(order), c_double(org_price), c_double(org_qty))
     if ret == 0:
-        api_logger.info(f'<订单>修改#{order.IntOrderNo}成功')
+        api_logger.info(f'<订单>修改#{order.IntOrderNo}')
         return ret
     else:
-        api_logger.error(f'<订单>修改#{order.IntOrderNo}失败      errcode:{ret}-errmsg:{RET_CODE_MSG_CHANGE_ORDER[ret]}')
-        raise Exception(f'<订单>修改#{order.IntOrderNo}失败      errcode:{ret}-errmsg:{RET_CODE_MSG_CHANGE_ORDER[ret]}')
+        api_logger.error(f'<订单>修改#{order.IntOrderNo}错误,errcode:{ret}-errmsg:{RET_CODE_MSG_CHANGE_ORDER[ret]}')
+        raise Exception(f'<订单>修改#{order.IntOrderNo}错误,errcode:{ret}-errmsg:{RET_CODE_MSG_CHANGE_ORDER[ret]}')
 
 def change_order_by(accOrderNo, org_price, org_qty, newPrice, newQty):
     ret = spdll.SPAPI_ChangeOrderBy(c_char_p_user_id,
@@ -219,11 +219,11 @@ def change_order_by(accOrderNo, org_price, org_qty, newPrice, newQty):
                                     c_double(newPrice),
                                     c_long(newQty))
     if ret == 0:
-        api_logger.info(f'<订单>修改#{accOrderNo}成功')
+        api_logger.info(f'<订单>修改#{accOrderNo}')
         return ret
     else:
-        api_logger.error(f'<订单>修改#{accOrderNo}失败      errcode:{ret}-errmsg:{RET_CODE_MSG_CHANGE_ORDER[ret]}')
-        raise Exception(f'<订单>修改#{accOrderNo}失败      errcode:{ret}-errmsg:{RET_CODE_MSG_CHANGE_ORDER[ret]}')
+        api_logger.error(f'<订单>修改#{accOrderNo}错误,errcode:{ret}-errmsg:{RET_CODE_MSG_CHANGE_ORDER[ret]}')
+        raise Exception(f'<订单>修改#{accOrderNo}错误,errcode:{ret}-errmsg:{RET_CODE_MSG_CHANGE_ORDER[ret]}')
 
 
 def get_order_by_orderNo(order_no):
@@ -233,8 +233,8 @@ def get_order_by_orderNo(order_no):
         api_logger.info(f'<订单>获取#{order_no}成功')
         return order
     else:
-        api_logger.error(f'<订单>获取#{order_no}失败      errcode:{ret}')
-        raise Exception(f'<订单>获取#{order_no}失败      errcode:{ret}')
+        api_logger.error(f'<订单>获取#{order_no}失败,errcode:{ret}')
+        raise Exception(f'<订单>获取#{order_no}失败,errcode:{ret}')
 
 
 def get_order_count():
@@ -243,8 +243,8 @@ def get_order_count():
         api_logger.info(f'<订单>数量获取成功')
         return ret
     else:
-        api_logger.error(f'<订单>数量获取失败      errcode:{ret}')
-        raise Exception(f'<订单>数量获取失败      errcode:{ret}')
+        api_logger.error(f'<订单>数量获取失败,errcode:{ret}')
+        raise Exception(f'<订单>数量获取失败,errcode:{ret}')
 
 
 # def get_active_order():
@@ -263,8 +263,8 @@ def get_orders_by_array():
         api_logger.info(f'<订单>获取所有列表成功')
         return [order for order in orders_list]
     else:
-        api_logger.error(f'<订单>获取所有列表失败      errcode:{ret}')
-        raise Exception(f'<订单>获取所有列表失败      errcode:{ret}')
+        api_logger.error(f'<订单>获取所有列表失败,errcode:{ret}')
+        raise Exception(f'<订单>获取所有列表失败,errcode:{ret}')
 
 
 def delete_order_by(accOrderNo, productCode, clOrderId=''):
@@ -273,60 +273,60 @@ def delete_order_by(accOrderNo, productCode, clOrderId=''):
                                     c_char_p(productCode.encode()),
                                     c_char_p(clOrderId.encode()))
     if ret == 0:
-        api_logger.info(f'<订单>删除#{accOrderNo}@{productCode}成功')
+        api_logger.info(f'<订单>删除#{accOrderNo}@{productCode}')
         return ret
     else:
-        api_logger.error(f'<订单>删除#{accOrderNo}@{productCode}失败      errcode：{ret}')
-        raise Exception(f'<订单>删除#{accOrderNo}@{productCode}失败      errcode：{ret}')
+        api_logger.error(f'<订单>删除#{accOrderNo}@{productCode}错误,errcode：{ret}')
+        raise Exception(f'<订单>删除#{accOrderNo}@{productCode}错误,errcode：{ret}')
 
 
 def delete_all_orders():
     ret = spdll.SPAPI_DeleteAllOrders(c_char_p_user_id, c_char_p_user_id)
     if ret == 0:
-        api_logger.info('<订单>删除全部订单成功')
+        api_logger.info('<订单>删除全部订单')
         return ret
     else:
-        api_logger.error(f'<订单>删除全部订单失败      errcode:{ret}')
-        raise Exception(f'<订单>删除全部订单失败      errcode:{ret}')
+        api_logger.error(f'<订单>删除全部订单错误,errcode:{ret}')
+        raise Exception(f'<订单>删除全部订单错误,errcode:{ret}')
 
 def activate_order_by(accOrderNo):
     ret = spdll.SPAPI_ActivateOrderBy(c_char_p_user_id, c_char_p_user_id, c_long(accOrderNo))
     if ret == 0:
-        api_logger.info(f'<订单>设置#{accOrderNo}为有效订单成功')
+        api_logger.info(f'<订单>设置#{accOrderNo}为有效订单')
         return ret
     else:
-        api_logger.error(f'<订单>设置#{accOrderNo}为有效订单失败      errcode:{ret}')
-        raise Exception(f'<订单>设置#{accOrderNo}为有效订单失败      errcode:{ret}')
+        api_logger.error(f'<订单>设置#{accOrderNo}为有效订单错误,errcode:{ret}')
+        raise Exception(f'<订单>设置#{accOrderNo}为有效订单错误,errcode:{ret}')
 
 
 def activate_all_orders():
     ret = spdll.SPAPI_ActivateAllOrders(c_char_p_user_id, c_char_p_user_id)
     if ret == 0:
-        api_logger.info('<订单>设置全部为有效订单成功')
+        api_logger.info('<订单>设置全部为有效订单')
         return ret
     else:
-        api_logger.error(f'<订单>设置全部为有效订单失败      errcode:{ret}')
-        raise Exception(f'<订单>设置全部为有效订单失败      errcode:{ret}')
+        api_logger.error(f'<订单>设置全部为有效订单错误,errcode:{ret}')
+        raise Exception(f'<订单>设置全部为有效订单错误,errcode:{ret}')
 
 
 def inactivate_order_by(accOrderNo):
     ret = spdll.SPAPI_InactivateOrderBy(c_char_p_user_id, c_char_p_user_id, c_long(accOrderNo))
     if ret == 0:
-        api_logger.info(f'<订单>设置#{accOrderNo}为无效订单成功')
+        api_logger.info(f'<订单>设置#{accOrderNo}为无效订单')
         return ret
     else:
-        api_logger.error(f'<订单>设置#{accOrderNo}为无效订单失败      errcode:{ret}')
-        raise Exception(f'<订单>设置#{accOrderNo}为无效订单失败      errcode:{ret}')
+        api_logger.error(f'<订单>设置#{accOrderNo}为无效订单错误,errcode:{ret}')
+        raise Exception(f'<订单>设置#{accOrderNo}为无效订单错误,errcode:{ret}')
 
 
 def inactivate_all_orders():
     ret = spdll.SPAPI_InactivateAllOrders(c_char_p_user_id, c_char_p_user_id)
     if ret == 0:
-        api_logger.info('<订单>设置全部为无效订单成功')
+        api_logger.info('<订单>设置全部为无效订单')
         return ret
     else:
-        api_logger.error(f'<订单>设置全部为无效订单失败      errcode:{ret}')
-        raise Exception(f'<订单>设置全部为无效订单失败      errcode:{ret}')
+        api_logger.error(f'<订单>设置全部为无效订单错误,errcode:{ret}')
+        raise Exception(f'<订单>设置全部为无效订单错误,errcode:{ret}')
 
 
 def send_marketmaking_order(**kwargs):
@@ -337,11 +337,11 @@ def send_marketmaking_order(**kwargs):
             setattr(mmorder, k, _v)
     ret = spdll.SPAPI_SendMarketMakingOrder(byref(mmorder))
     if ret == 0:
-        api_logger.info('<订单>造市商下单成功')
+        api_logger.info('<订单>造市商下单')
         return ret
     else:
-        api_logger.error(f'<订单>造市商下单失败      errcode：{ret}')
-        raise Exception(f'<订单>造市商下单失败      errcode：{ret}')
+        api_logger.error(f'<订单>造市商下单错误,errcode：{ret}')
+        raise Exception(f'<订单>造市商下单错误,errcode：{ret}')
 
 
 def get_pos_count():
@@ -354,8 +354,8 @@ def get_pos_count():
         api_logger.info('<持仓>获取数量成功')
         return ret
     else:
-        api_logger.error(f'<持仓>获取数量失败      errcode:{ret}')
-        raise Exception(f'<持仓>获取数量失败      errcode:{ret}')
+        api_logger.error(f'<持仓>获取数量失败,errcode:{ret}')
+        raise Exception(f'<持仓>获取数量失败,errcode:{ret}')
 
 
 # def get_all_pos():
@@ -374,8 +374,8 @@ def get_all_pos_by_array():
         api_logger.info('<持仓>获取全部信息列表成功')
         return [pos for pos in all_pos]
     else:
-        api_logger.error(f'<持仓>获取全部信息列表失败      errcode:{ret}')
-        raise Exception(f'<持仓>获取全部信息列表失败      errcode:{ret}')
+        api_logger.error(f'<持仓>获取全部信息列表失败,errcode:{ret}')
+        raise Exception(f'<持仓>获取全部信息列表失败,errcode:{ret}')
 
 
 def get_pos_by_product(prod_code):
@@ -385,8 +385,8 @@ def get_pos_by_product(prod_code):
         api_logger.info(f'<持仓>获取@{prod_code}持仓信息成功')
         return product_pos
     else:
-        api_logger.error(f'<持仓>获取@{prod_code}持仓信息失败      errcode:{ret}')
-        raise Exception(f'<持仓>获取@{prod_code}持仓信息失败      errcode:{ret}')
+        api_logger.error(f'<持仓>获取@{prod_code}持仓信息失败,errcode:{ret}')
+        raise Exception(f'<持仓>获取@{prod_code}持仓信息失败,errcode:{ret}')
 
 
 def get_trade_count():
@@ -395,8 +395,8 @@ def get_trade_count():
         api_logger.info(f'<成交>获取数量成功')
         return ret
     else:
-        api_logger.error(f'<成交>获取数量失败      errcode:{ret}')
-        raise Exception(f'<成交>获取数量失败      errcode:{ret}')
+        api_logger.error(f'<成交>获取数量失败,errcode:{ret}')
+        raise Exception(f'<成交>获取数量失败,errcode:{ret}')
 
 # def get_all_trades():
 #     all_trades = POINTER(SPApiTrade)()
@@ -414,8 +414,8 @@ def get_all_trades_by_array():
         api_logger.info(f'<成交>获取信息列表成功')
         return [trade for trade in all_trades]
     else:
-        api_logger.error(f'<成交>获取信息列表失败      errcode:{ret}')
-        raise Exception(f'<成交>获取信息列表失败      errcode:{ret}')
+        api_logger.error(f'<成交>获取信息列表失败,errcode:{ret}')
+        raise Exception(f'<成交>获取信息列表失败,errcode:{ret}')
 
 
 def subscribe_price(prod_code, mode):
@@ -425,8 +425,8 @@ def subscribe_price(prod_code, mode):
         api_logger.info(f'<数据>{mode_type[mode]}@{prod_code}市场数据成功')
         return ret
     else:
-        api_logger.error(f'<数据>{mode_type[mode]}@{prod_code}市场数据失败      errcode:{ret}')
-        raise Exception(f'<数据>{mode_type[mode]}@{prod_code}市场数据失败      errcode:{ret}')
+        api_logger.error(f'<数据>{mode_type[mode]}@{prod_code}市场数据失败,errcode:{ret}')
+        raise Exception(f'<数据>{mode_type[mode]}@{prod_code}市场数据失败,errcode:{ret}')
 
 
 def get_price_by_code(prod_code):
@@ -436,18 +436,18 @@ def get_price_by_code(prod_code):
         api_logger.info(f'<数据>获取@{prod_code}价格信息成功')
         return price_by_code
     else:
-        api_logger.error(f'<数据>获取@{prod_code}价格信息失败      errcode:{ret}')
-        raise Exception(f'<数据>获取@{prod_code}价格信息失败      errcode:{ret}')
+        api_logger.error(f'<数据>获取@{prod_code}价格信息失败,errcode:{ret}')
+        raise Exception(f'<数据>获取@{prod_code}价格信息失败,errcode:{ret}')
 
 
 def load_instrument_list():
     ret = spdll.SPAPI_LoadInstrumentList()
     if ret >= 0:
-        api_logger.info('<产品>加载所有系列信息成功')
+        api_logger.info('<产品>加载所有系列信息')
         return ret
     else:
-        api_logger.error(f'<产品>加载所有系列信息失败      errcode:{ret}')
-        raise Exception(f'<产品>加载所有系列信息失败      errcode:{ret}')
+        api_logger.error(f'<产品>加载所有系列信息错误,errcode:{ret}')
+        raise Exception(f'<产品>加载所有系列信息错误,errcode:{ret}')
 
 
 def get_instrument_count():
@@ -456,8 +456,8 @@ def get_instrument_count():
         api_logger.info('<产品>获取数量成功')
         return ret
     else:
-        api_logger.error(f'<产品>获取数量失败      errcode:{ret}')
-        raise Exception(f'<产品>获取数量失败      errcode:{ret}')
+        api_logger.error(f'<产品>获取数量失败,errcode:{ret}')
+        raise Exception(f'<产品>获取数量失败,errcode:{ret}')
 
 # def get_instrument():
 #     inst_list = (SPApiInstrument * get_instrument_count())()  # TODO SPApiInstrument
@@ -476,8 +476,8 @@ def get_instrument_by_array():
         api_logger.info('<产品>获取所有市场产品系列信息成功')
         return [inst for inst in inst_list]
     else:
-        api_logger.error(f'<产品>获取所有市场产品系列信息失败      errcode:{ret}')
-        raise Exception(f'<产品>获取所有市场产品系列信息失败      errcode:{ret}')
+        api_logger.error(f'<产品>获取所有市场产品系列信息失败,errcode:{ret}')
+        raise Exception(f'<产品>获取所有市场产品系列信息失败,errcode:{ret}')
 
 
 def get_instrument_by_code(inst_code):
@@ -487,8 +487,8 @@ def get_instrument_by_code(inst_code):
         api_logger.info(f'<产品>获取~{inst_code}~产品系列信息成功')
         return inst_by_code
     else:
-        api_logger.error(f'<产品>获取~{inst_code}~产品系列信息失败      errcode:{ret}')
-        raise Exception(f'<产品>获取~{inst_code}~产品系列信息失败      errcode:{ret}')
+        api_logger.error(f'<产品>获取~{inst_code}~产品系列信息失败,errcode:{ret}')
+        raise Exception(f'<产品>获取~{inst_code}~产品系列信息失败,errcode:{ret}')
 
 
 def get_product_count():
@@ -497,8 +497,8 @@ def get_product_count():
         api_logger.info('<合约>获取数量成功')
         return ret
     else:
-        api_logger.error(f'<合约>获取数量失败      errcode:{ret}')
-        raise Exception(f'<合约>获取数量失败      errcode:{ret}')
+        api_logger.error(f'<合约>获取数量失败,errcode:{ret}')
+        raise Exception(f'<合约>获取数量失败,errcode:{ret}')
 
 # def get_product():
 #     prod_list = pointer(SPApiProduct())  # TODO SPApiProduct
@@ -516,8 +516,8 @@ def get_product_by_array():
         api_logger.info('<合约>获取所有已加载的合约信息成功')
         return [prod for prod in prod_list]
     else:
-        api_logger.info(f'<合约>获取所有已加载的合约信息失败      errcode:{ret}')
-        raise Exception(f'<合约>获取所有已加载的合约信息失败      errcode:{ret}')
+        api_logger.info(f'<合约>获取所有已加载的合约信息失败,errcode:{ret}')
+        raise Exception(f'<合约>获取所有已加载的合约信息失败,errcode:{ret}')
 
 
 def get_product_by_code(prod_code):
@@ -527,8 +527,8 @@ def get_product_by_code(prod_code):
         api_logger.info(f'<合约>获取@{prod_code}信息成功')
         return prod_by_code
     else:
-        api_logger.error(f'<合约>获取@{prod_code}信息失败      errcode:{ret}')
-        raise Exception(f'<合约>获取@{prod_code}信息失败      errcode:{ret}')
+        api_logger.error(f'<合约>获取@{prod_code}信息失败,errcode:{ret}')
+        raise Exception(f'<合约>获取@{prod_code}信息失败,errcode:{ret}')
 
 
 def get_accbal_count():
@@ -537,8 +537,8 @@ def get_accbal_count():
         api_logger.info('<结余>获取含现金结余的币种数量成功')
         return ret
     else:
-        api_logger.error(f'<结余>获取含现金结余的币种数量失败      errcode:{ret}')
-        raise Exception(f'<结余>获取含现金结余的币种数量失败      errcode:{ret}')
+        api_logger.error(f'<结余>获取含现金结余的币种数量失败,errcode:{ret}')
+        raise Exception(f'<结余>获取含现金结余的币种数量失败,errcode:{ret}')
 
 
 # def get_all_accbal():
@@ -558,8 +558,8 @@ def get_all_accbal_by_array():
         api_logger.info('<结余>获取账户全部现金结余信息成功')
         return [accbal for accbal in all_accbal]
     else:
-        api_logger.error(f'<结余>获取账户全部现金结余信息失败      errcode:{ret}')
-        raise Exception(f'<结余>获取账户全部现金结余信息失败      errcode:{ret}')
+        api_logger.error(f'<结余>获取账户全部现金结余信息失败,errcode:{ret}')
+        raise Exception(f'<结余>获取账户全部现金结余信息失败,errcode:{ret}')
 
 
 def get_accbal_by_currency(ccy):
@@ -569,8 +569,8 @@ def get_accbal_by_currency(ccy):
         api_logger.info(f'<结余>获取{ccy}现金结余信息成功')
         return accbal_by_currency
     else:
-        api_logger.error(f'<结余>获取{ccy}现金结余信息失败      errcode:{ret}')
-        raise Exception(f'<结余>获取{ccy}现金结余信息失败      errcode:{ret}')
+        api_logger.error(f'<结余>获取{ccy}现金结余信息失败,errcode:{ret}')
+        raise Exception(f'<结余>获取{ccy}现金结余信息失败,errcode:{ret}')
 
 
 def subscribe_ticker(prod_code, mode):
@@ -586,8 +586,8 @@ def subscribe_ticker(prod_code, mode):
         api_logger.info(f'<数据>{mode_type[mode]}@{prod_code}成交信息成功')
         return ret
     else:
-        api_logger.error(f'<数据>{mode_type[mode]}@{prod_code}成交信息失败      errcode:{ret}')
-        raise Exception(f'<数据>{mode_type[mode]}@{prod_code}成交信息失败      errcode:{ret}')
+        api_logger.error(f'<数据>{mode_type[mode]}@{prod_code}成交信息失败,errcode:{ret}')
+        raise Exception(f'<数据>{mode_type[mode]}@{prod_code}成交信息失败,errcode:{ret}')
 
 
 def subscribe_quote_request(prod_code, mode):
@@ -603,8 +603,8 @@ def subscribe_quote_request(prod_code, mode):
         api_logger.info(f'<数据>{mode_type[mode]}@{prod_code}报价行情成功')
         return ret
     else:
-        api_logger.error(f'<数据>{mode_type[mode]}@{prod_code}报价行情失败      errcode:{ret}')
-        raise Exception(f'<数据>{mode_type[mode]}@{prod_code}报价行情失败      errcode:{ret}')
+        api_logger.error(f'<数据>{mode_type[mode]}@{prod_code}报价行情失败,errcode:{ret}')
+        raise Exception(f'<数据>{mode_type[mode]}@{prod_code}报价行情失败,errcode:{ret}')
 
 
 def subscribe_all_quote_request(mode):
@@ -619,8 +619,8 @@ def subscribe_all_quote_request(mode):
         api_logger.info(f'<数据>{mode_type[mode]}所有报价行情成功')
         return ret
     else:
-        api_logger.error(f'<数据>{mode_type[mode]}所有报价行情失败      errcode:{ret}')
-        raise Exception(f'<数据>{mode_type[mode]}所有报价行情失败      errcode:{ret}')
+        api_logger.error(f'<数据>{mode_type[mode]}所有报价行情失败,errcode:{ret}')
+        raise Exception(f'<数据>{mode_type[mode]}所有报价行情失败,errcode:{ret}')
 
 
 def get_acc_info():
@@ -634,8 +634,8 @@ def get_acc_info():
         api_logger.info('<账户>获取账户信息成功')
         return acc_info
     else:
-        api_logger.error(f'<账户>获取账户信息失败      errcode:{ret}')
-        raise Exception(f'<账户>获取账户信息失败      errcode:{ret}')
+        api_logger.error(f'<账户>获取账户信息失败,errcode:{ret}')
+        raise Exception(f'<账户>获取账户信息失败,errcode:{ret}')
 
 def get_dll_version():
     """
@@ -653,8 +653,8 @@ def get_dll_version():
         api_logger.info(f'<版本>查询版本信息<{c_dll_ver_no}>成功')
         return version
     else:
-        api_logger.error(f'<版本>查询版本信息失败      errcode:{ret}')
-        raise Exception(f'<版本>查询版本信息失败      errcode:{ret}')
+        api_logger.error(f'<版本>查询版本信息失败,errcode:{ret}')
+        raise Exception(f'<版本>查询版本信息失败,errcode:{ret}')
 
 
 def load_productinfolist_by_market(market_code):
@@ -665,11 +665,11 @@ def load_productinfolist_by_market(market_code):
     """
     ret = spdll.SPAPI_LoadProductInfoListByMarket(c_char_p(market_code.encode()))
     if ret >= 0:
-        api_logger.info(f'<合约>请求加载<{market_code}>交易所有合约信息成功')
+        api_logger.info(f'<合约>请求加载<{market_code}>交易所有合约信息')
         return ret
     else:
-        api_logger.error(f'<合约>请求加载<{market_code}>交易所有合约信息失败       errcode:{ret}')
-        raise Exception(f'<合约>请求加载<{market_code}>交易所有合约信息失败      errcode:{ret}')
+        api_logger.error(f'<合约>请求加载<{market_code}>交易所有合约信息错误,errcode:{ret}')
+        raise Exception(f'<合约>请求加载<{market_code}>交易所有合约信息错误,errcode:{ret}')
 
 
 
@@ -681,11 +681,11 @@ def load_productinfolist_by_code(inst_code):
     """
     ret = spdll.SPAPI_LoadProductInfoListByCode(c_char_p(inst_code.encode()))
     if ret >= 0:
-        api_logger.info(f'<合约>请求加载~{inst_code}~产品系列代码合约信息成功')
+        api_logger.info(f'<合约>请求加载~{inst_code}~产品系列代码合约信息')
         return ret
     else:
-        api_logger.error(f'<合约>请求加载~{inst_code}~产品系列代码合约信息失败      errcode:{ret}')
-        raise Exception(f'<合约>请求加载~{inst_code}~产品系列代码合约信息失败      errcode:{ret}')
+        api_logger.error(f'<合约>请求加载~{inst_code}~产品系列代码合约信息错误,errcode:{ret}')
+        raise Exception(f'<合约>请求加载~{inst_code}~产品系列代码合约信息错误,errcode:{ret}')
 
 
 
@@ -697,11 +697,11 @@ def set_ApiLog_path(path):
     """
     ret = spdll.SPAPI_SetApiLogPath(c_char_p(path))
     if ret == 0:
-        api_logger.info('<日志>设置存放位置成功')
+        api_logger.info('<日志>设置存放位置')
         return ret
     else:
-        api_logger.error(f'<日志>设置存放位置失败      errcode:{ret}')
-        raise Exception(f'<日志>设置存放位置失败      errcode:{ret}')
+        api_logger.error(f'<日志>设置存放位置错误,errcode:{ret}')
+        raise Exception(f'<日志>设置存放位置错误,errcode:{ret}')
 
 
 def get_ccy_rate_by_ccy(ccy):
@@ -716,8 +716,8 @@ def get_ccy_rate_by_ccy(ccy):
         api_logger.info(f'<数据>获取{ccy}兑换率成功')
         return c_rate
     else:
-        api_logger.error(f'<数据>获取{ccy}兑换率失败      errcode:{ret}')
-        raise Exception(f'<数据>获取{ccy}兑换率失败      errcode:{ret}')
+        api_logger.error(f'<数据>获取{ccy}兑换率失败,errcode:{ret}')
+        raise Exception(f'<数据>获取{ccy}兑换率失败,errcode:{ret}')
 
 
 def account_login(user_id, acc_no):
@@ -729,11 +729,11 @@ def account_login(user_id, acc_no):
     """
     ret = spdll.SPAPI_AccountLogin(c_char_p(user_id.encode()), c_char_p(acc_no.encode()))
     if ret == 0:
-        api_logger.info(f'<账户>请求登入acc账户{acc_no}成功')
+        api_logger.info(f'<账户>请求登入acc账户{acc_no}')
         return ret
     else:
-        api_logger.error(f'<账户>请求登入acc账户{acc_no}失败      errcode:{ret}')
-        raise Exception(f'<账户>请求登入acc账户{acc_no}失败      errcode:{ret}')
+        api_logger.error(f'<账户>请求登入acc账户{acc_no}错误,errcode:{ret}')
+        raise Exception(f'<账户>请求登入acc账户{acc_no}错误,errcode:{ret}')
 
 
 def account_logout(user_id, acc_no):
@@ -745,11 +745,11 @@ def account_logout(user_id, acc_no):
     """
     ret = spdll.SPAPI_AccountLogout(c_char_p(user_id.encode()), c_char_p(acc_no.encode()))
     if ret == 0:
-        api_logger.info(f'<账户>请求释放acc账户{acc_no}成功')
+        api_logger.info(f'<账户>请求释放acc账户{acc_no}')
         return ret
     else:
-        api_logger.error(f'<账户>请求释放acc账户{acc_no}失败')
-        raise Exception(f'<账户>请求释放acc账户{acc_no}失败')
+        api_logger.error(f'<账户>请求释放acc账户{acc_no}错误')
+        raise Exception(f'<账户>请求释放acc账户{acc_no}错误')
 
 
 def send_acc_control(user_id, acc_no, ctrl_mask, ctrl_level):
@@ -775,11 +775,11 @@ def send_acc_control(user_id, acc_no, ctrl_mask, ctrl_level):
                                     c_char(ctrl_level.encode())
                                     )
     if ret == 0:
-        api_logger.info('<控制>请求控制成功')
+        api_logger.info('<控制>请求控制')
         return ret
     else:
-        api_logger.error(f'<控制>请求控制失败      errcode:{ret}')
-        raise Exception(f'<控制>请求控制失败       errcode:{ret}')
+        api_logger.error(f'<控制>请求控制错误,errcode:{ret}')
+        raise Exception(f'<控制>请求控制错误,errcode:{ret}')
 
 
 # ------------------------callback_function----------------------------------+
