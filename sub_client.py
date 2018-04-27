@@ -265,7 +265,7 @@ if __name__ == '__main__':
                          12: 'Z'
                          }
     # symbol = 'HSI' + MONTH_LETTER_MAPS[dt.datetime.now().month] + str(dt.datetime.now().year)[-1]
-    symbol = 'HSIJ8'
+    symbol = 'HSIK8'
     on_tick = SubTicker(symbol)
     on_price = SubPrice(symbol)
     spfunc = SpFunc()

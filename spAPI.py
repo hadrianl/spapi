@@ -188,12 +188,12 @@ def add_inactive_order(**kwargs):
     order.AccNo = c_char_p_user_id.value
     order.Initiator = c_char_p_user_id.value
     order.Ref = b'@PYTHON#TRADEAPI'
-    for k, v in kwargs:
+    for k, v in kwargs.items():
         if hasattr(order, k):
             _v = v.encode() if isinstance(v, str) else v
             setattr(order, k, _v)
 
-    ret = spdll.SPAPI_AddOrder(byref(order))
+    ret = spdll.SPAPI_AddInactiveOrder(byref(order))
     if ret == 0:
         api_logger.info(f'<订单>添加无效订单')
         return order
