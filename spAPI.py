@@ -168,7 +168,7 @@ def add_order(**kwargs):
     order = SPApiOrder()
     order.AccNo = c_char_p_user_id.value
     order.Initiator = c_char_p_user_id.value
-    order.Ref = b'@PYTHON#TRADEAPI'
+    order.Ref = kwargs.get('Ref', '@PYTHON#TRADEAPI').decode()
     for k, v in kwargs.items():
         if hasattr(order, k):
             _v = v.encode() if isinstance(v, str) else v
