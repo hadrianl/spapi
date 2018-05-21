@@ -248,7 +248,7 @@ def insert_ticker():
             if ticker.ProdCode.decode() in to_sql_list:
                 sql = f'insert into futures_tick(prodcode, price, tickertime, qty, dealsrc, decinprice) \
             values ("{ticker.ProdCode.decode()}", {ticker.Price}, "{datetime.fromtimestamp(ticker.TickerTime)}", \
-            {ticker.Qty}, {ticker.DealSrc}, "{ticker.DecInPrice.decode()}")'
+            {ticker.Qty}, {ticker.DealSrc}, "{ticker.DecInPrice}")'
                 cursor.execute(sql)
                 conn.commit()
         except pm.Error as e:
