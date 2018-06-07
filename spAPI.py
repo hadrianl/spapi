@@ -202,7 +202,7 @@ def add_inactive_order(**kwargs):
         raise Exception(f'<订单>添加无效订单错误,errcode:{ret}-errmsg:{RET_CODE_MSG_ORDER[ret]}')
 
 def change_order(order, org_price, org_qty):
-    ret = spdll.SPAPI_ChangeOrder(c_char_p_user_id, pointer(order), c_double(org_price), c_double(org_qty))
+    ret = spdll.SPAPI_ChangeOrder(c_char_p_user_id, byref(order), c_double(org_price), c_double(org_qty))
     if ret == 0:
         api_logger.info(f'<订单>修改#{order.IntOrderNo}')
         return ret
