@@ -9,7 +9,7 @@ from setuptools import setup, find_packages
 
 
 setup(name='spapi',
-      version='1.0',
+      version='1.1',
       description='HK SharpPoint API - Python',
       author='Hadrianl',
       author_email='137150224@qq.com',

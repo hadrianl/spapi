@@ -111,8 +111,8 @@ def login():
         api_logger.info(f'<连接>发送{c_char_p_user_id.value.decode()}登录请求')
         return ret
     else:
-        api_logger.error(f'<连接>发送{c_char_p_user_id.value.decode}登录请求错误,errcode:{ret}')
-        raise Exception(f'<连接>发送{c_char_p_user_id.value.decode}登录请求错误,errcode:{ret}')
+        api_logger.error(f'<连接>发送{c_char_p_user_id.value.decode()}登录请求错误,errcode:{ret}')
+        raise Exception(f'<连接>发送{c_char_p_user_id.value.decode()}登录请求错误,errcode:{ret}')
 
 
 def logout():
@@ -127,7 +127,7 @@ def logout():
         return ret
     else:
         api_logger.error(f'<连接>发送{c_char_p_user_id.value.decode()}登出请求错误,errcode:{ret}')
-        raise Exception(f'<连接>发送{c_char_p_user_id.value.decode}登录请求错误,errcode:{ret}')
+        raise Exception(f'<连接>发送{c_char_p_user_id.value.decode()}登录请求错误,errcode:{ret}')
 
 
 def change_password(old_psw, new_psw):
